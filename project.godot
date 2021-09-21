@@ -1,0 +1,38 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+[application]
+
+config/name="gdtemu: Godot Teensy Emulator"
+config/description="GDNative wrapper around Fabrice Bellard's TinyEMU (https://bellard.org/tinyemu/) system emulator for the RISC-V and x86 architectures."
+run/main_scene="res://examples/basic/basic.tscn"
+config/icon="res://icon.png"
+
+[display]
+
+window/vsync/use_vsync=false
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/gdtemu/plugin.cfg", "res://addons/godot_xterm/plugin.cfg" )
+
+[global]
+
+template=false
+FPS=false
+vsync=false
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"

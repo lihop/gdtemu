@@ -1,0 +1,13 @@
+# Build products
+temu
+libtemu.a
+build_filelist
+splitimg
+*.a
+*.bc
+*.d
+*.o
+*.os
+
+# macOS-specific
+.DS_Store
