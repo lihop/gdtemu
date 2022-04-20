@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://addons/gdtemu/virtual_machine.gd" type="Script" id=1]
+[ext_resource path="res://examples/riscv64/riscv64_config.tres" type="Resource" id=2]
+[ext_resource path="res://examples/console.tscn" type="PackedScene" id=3]
+
+[node name="Console" instance=ExtResource( 3 )]
+autostart = false
+
+[node name="VirtualMachine" type="Node" parent="." index="1"]
+script = ExtResource( 1 )
+config = ExtResource( 2 )
+thread_priority = 2
+
+[connection signal="paused" from="." to="VirtualMachine" method="set" binds= [ "paused", true ]]
+[connection signal="powered_off" from="." to="VirtualMachine" method="stop"]
+[connection signal="powered_on" from="." to="VirtualMachine" method="start"]
+[connection signal="unpaused" from="." to="VirtualMachine" method="set" binds= [ "paused", false ]]
+[connection signal="data_sent" from="_/Terminal" to="VirtualMachine" method="console_read"]
+[connection signal="size_changed" from="_/Terminal" to="VirtualMachine" method="console_resize"]
+[connection signal="console_wrote" from="VirtualMachine" to="_/Terminal" method="write"]

@@ -1,0 +1,30 @@
+name: 'Build and Test'
+
+on:
+  push:
+  schedule: # Keep the cache alive!
+    - cron: 7 1 * * fri
+
+jobs:
+  reuse-compliance-check:
+    name: 'Check REUSE Compliance'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: REUSE Compliance Check
+      uses: fsfe/reuse-action@v1
+      with:
+        args: --root ./addons/gdtemu
+
+  gdformat-check:
+    name: 'Check GDScript Format'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - name: GDFormat Check
+      run: |
+        python -m pip install -r requirements.txt
+        gdformat -c .

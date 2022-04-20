@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # SPDX-FileCopyrightText: 2017-2020 GodotNativeTools
-# SPDX-FileCopyrightText: 2021 Leroy Hopson <gdtemu@leroy.geek.nz>
+# SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz>
 # SPDX-License-Identifier: MIT
 import os
 import sys
@@ -20,7 +20,6 @@ else:
         'platform=<platform>'
     )
 
-#VariantDir('./thirdparty/libtsm/build', './thirdparty/libtsm/src', duplicate=0)
 env = Environment(ENV = os.environ)
 
 is64 = sys.maxsize > 2**32
@@ -107,8 +106,8 @@ elif env['platform'] == 'javascript':
     env['CXX'] = 'em++'
     env['AR'] = 'emar'
     env['RANLIB'] = 'emranlib'
-    env.Append(CPPFLAGS=['-s', 'SIDE_MODULE=1', '-s', 'ASSERTIONS=2'])
-    env.Append(LINKFLAGS=['-s', 'SIDE_MODULE=1', '-s', 'ASSERTIONS=2'])
+    env.Append(CPPFLAGS=['-s', 'SIDE_MODULE=1', '-s', 'ASSERTIONS=1'])
+    env.Append(LINKFLAGS=['-s', 'SIDE_MODULE=1', '-s', 'ASSERTIONS=1'])
     env['SHOBJSUFFIX'] = '.bc'
     env['SHLIBSUFFIX'] = '.wasm'
     env['OBJPREFIX'] = ''
@@ -188,12 +187,64 @@ elif env['platform'] == 'windows':
             env['LINK'] = "i686-w64-mingw32-g++"
 
 
-# Build libgodot-xterm.
+# Build TinyEMU as a static library.
+env.Append(CPPDEFINES=['-DCONFIG_VERSION=\\"2019-02-10\\"'])
+env.Append(CPPDEFINES=['-DCONFIG_RISCV_MAX_XLEN=64'])
+if env['platform'] == 'linux':
+    env.Append(CPPDEFINES=['-DCONFIG_X86EMU=y'])
+
+env32 = env.Clone() 
+env32.Append(CPPDEFINES=['-DMAX_XLEN=32'])
+Default(env32.StaticObject(
+    target = 'thirdparty/TinyEMU/riscv_cpu32.o',
+    source = 'thirdparty/TinyEMU/riscv_cpu.c',
+))
+
+env64 = env.Clone()
+env64.Append(CPPDEFINES=['-DMAX_XLEN=64'])
+Default(env64.StaticObject(
+    target = 'thirdparty/TinyEMU/riscv_cpu64.o',
+    source = 'thirdparty/TinyEMU/riscv_cpu.c',
+))
+
+env.Append(CPPPATH=[
+    'thirdparty/TinyEMU/',
+    'thirdparty/TinyEMU/slirp/',
+])
+
+sources = []
+
+env.Append(CPPDEFINES=['-DCONFIG_SLIRP=y'])
+
+sources.append(['thirdparty/TinyEMU/' + f for f in [
+    'virtio.c', 'pci.c', 'fs.c', 'cutils.c', 'iomem.c', 'simplefb.c', 'json.c', 'machine.c', 'elf.c',
+]])
+sources.append(['thirdparty/TinyEMU/slirp/' + f for f in [
+    'bootp.c', 'ip_icmp.c', 'mbuf.c', 'slirp.c', 'tcp_output.c', 'cksum.c', 'ip_input.c', 'misc.c',
+    'socket.c', 'tcp_subr.c', 'udp.c', 'if.c', 'ip_output.c', 'sbuf.c', 'tcp_input.c', 'tcp_timer.c',
+]])
+sources.append(['thirdparty/TinyEMU/' + f for f in [
+    'fs_disk.c', 'riscv_machine.c', 'softfp.c',
+    'riscv_cpu32.o',
+    'riscv_cpu64.o',
+    'x86_cpu.c', 'x86_machine.c', 'ide.c', 'ps2.c', 'vmmouse.c', 'pckbd.c', 'vga.c',
+    'temu.c',
+]])
+
+libtemu = env.StaticLibrary(
+    target='thirdparty/TinyEMU/libtemu.a',
+    source=sources
+)
+Default(libtemu)
+
+
+# Build libgdtemu.
 if env['platform'] != 'windows':
     env.Append(CXXFLAGS=['-std=c++14'])
 
 env.Append(CPPPATH=[
-    'thirdparty/tinyemu/',
+    'thirdparty/TinyEMU/',
+    'thirdparty/TinyEMU/slirp/',
     'thirdparty/godot-cpp/include/',
     'thirdparty/godot-cpp/include/core/',
     'thirdparty/godot-cpp/include/gen/',
@@ -202,6 +253,7 @@ env.Append(CPPPATH=[
 ])
 env.Append(LIBPATH=[
     'thirdparty/godot-cpp/bin/',
+    'thirdparty/TinyEMU/',
 ])
 
 env.Append(LIBS=[
@@ -211,41 +263,18 @@ env.Append(LIBS=[
         'wasm' if env['platform'] == 'javascript' else env['bits'],
         env['LIBSUFFIX'],
     )),
-    # FIXME: Use proper vars for cross-platform. 
-    env.File('thirdparty/tinyemu/libtemu.a')
-#    env.File('thirdparty/libtsm/build/bin/libtsm.{}.{}.{}{}'.format(
-#        env['platform'],
-#        env['target'],
-#        env['bits'],
-#        env['LIBSUFFIX'],
-#    )),
+    env.File('thirdparty/TinyEMU/libtemu.a'), # FIXME: Add platform, bits, etc.
 ])
 
 sources = []
-sources.append('src/emulator.cpp')
+
+sources.append('src/vm.cpp')
 sources.append('src/libgdtemu.cpp')
-#
-#
-## PTY not supported on HTML5.
-#if env['disable_pty'] or env['platform'] == 'javascript':
-#    env.Append(CPPDEFINES=['_PTY_DISABLED'])
-#else:
-#    sources.append('src/pipe.cpp')
-#    sources.append('src/libuv_utils.cpp')
-#    if env['platform'] != 'windows':
-#        sources.append('src/node_pty/unix/pty.cc')
-#        env.Append(LIBS=['util', env.File('thirdparty/libuv/build/libuv_a.a')])
-#    else:
-#        #sources.append('src/node_pty/win/conpty.cc')
-#        env.Append(LIBS=[
-#            env.File(f'thirdparty/libuv/build/{env["target"].capitalize()}/uv_a.lib'),
-#            'Advapi32.lib',
-#            'Iphlpapi.lib',
-#            'user32.lib',
-#            'userenv.lib',
-#            'Ws2_32.lib',
-#        ])
-#
+
+# Compressed initramfs support.
+env.Append(CPPDEFINES=['CONFIG_INITRAMFS=y'])
+env.Append(LINKFLAGS=['-lz'])
+
 if env['platform'] == 'linux':
     libsuffix = "a"
     suffix = "so"

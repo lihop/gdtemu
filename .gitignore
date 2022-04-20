@@ -1,10 +1,14 @@
-# SPDX-FileCopyrightText: 2021 Leroy Hopson <gdtemu@leroy.geek.nz>
-# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
 .import/
 .plugged/
 .sconsign.dblite
+.venv/
+.vscode/
 addons/*
 !addons/gd-plug/
 !addons/gdtemu/
+*.bc
+*.o
 *.os
 *.swp

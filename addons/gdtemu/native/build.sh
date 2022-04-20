@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2021 Leroy Hopson <gdtemu@leroy.geek.nz> 
+# SPDX-FileCopyrightText: 2021 Leroy Hopson <copyright@leroy.geek.nz> 
 # SPDX-License-Identifier: MIT
 set -e
 
@@ -42,7 +42,7 @@ fi
 
 # Update git submodules.
 updateSubmodules() {
-	eval $1=$2 # E.g TINYEMU_DIR=${NATIVE_DIR}/thirdparty/tinyemu
+	eval $1=$2 # E.g TINYEMU_DIR=${NATIVE_DIR}/thirdparty/TinyEMU
 
 	if [ -z "$(ls -A -- "$2")" ]; then
 		cd ${NATIVE_DIR}
@@ -50,23 +50,13 @@ updateSubmodules() {
 	fi
 }
 
-updateSubmodules TINYEMU_DIR ${NATIVE_DIR}/thirdparty/tinyemu
+updateSubmodules TINYEMU_DIR ${NATIVE_DIR}/thirdparty/TinyEMU
 updateSubmodules GODOT_CPP_DIR ${NATIVE_DIR}/thirdparty/godot-cpp
 
 # Build godot-cpp bindings.
 cd ${GODOT_CPP_DIR}
-scons generate_bindings=yes target=$target -j$nproc
+scons target=$target -j$nproc #generate_bindings=yes target=$target -j$nproc
 
-# Build libtemu as a static library.
-cd ${TINYEMU_DIR}
-make -j$nproc # TODO: Specific debug/release builds.
-
-# Build libgdtemu.
+## Build libgdtemu.
 cd ${NATIVE_DIR}
 scons target=$target -j$nproc
-
-# Use Docker to build libgodot-xterm javascript.
-#if [ -x "$(command -v docker-compose)" ]; then
-#	UID_GID="0:0" TARGET=$target docker-compose build javascript
-#	UID_GID="$(id -u):$(id -g)" TARGET=$target docker-compose run javascript
-#fi

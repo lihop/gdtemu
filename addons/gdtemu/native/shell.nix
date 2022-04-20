@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: 2021 Leroy Hopson <gdtemu@leroy.geek.nz>
-# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz>
+# SPDX-License-Identifier: CC0-1.0
 let
   pkgs = import (fetchTarball("https://github.com/NixOS/nixpkgs/archive/09cd65b33c5653d7d2954fef4b9f0e718c899743.tar.gz")) {};
 in pkgs.mkShell {
