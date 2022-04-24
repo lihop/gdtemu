@@ -145,7 +145,7 @@ void VM::run(int max_sleep_time_ms = MAX_SLEEP_TIME, int max_exec_cycles = MAX_E
     vm->net->select_poll(vm->net, &rfds, &wfds, &efds, ret);
   }
 
-  virt_machine_interp(vm, MAX_EXEC_CYCLES);
+  virt_machine_interp(vm, max_exec_cycles);
 }
 
 void VM::stop() {
