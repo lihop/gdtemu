@@ -468,7 +468,7 @@ static EthernetDevice *tun_open(const char *ifname)
 
 static Slirp *slirp_state;
 
-static void slirp_write_packet(EthernetDevice *net,
+void slirp_write_packet(EthernetDevice *net,
                                const uint8_t *buf, int len)
 {
     Slirp *slirp_state = net->opaque;
@@ -487,7 +487,7 @@ void slirp_output(void *opaque, const uint8_t *pkt, int pkt_len)
     return net->device_write_packet(net, pkt, pkt_len);
 }
 
-static void slirp_select_fill1(EthernetDevice *net, int *pfd_max,
+void slirp_select_fill1(EthernetDevice *net, int *pfd_max,
                                fd_set *rfds, fd_set *wfds, fd_set *efds,
                                int *pdelay)
 {
@@ -495,7 +495,7 @@ static void slirp_select_fill1(EthernetDevice *net, int *pfd_max,
     slirp_select_fill(slirp_state, pfd_max, rfds, wfds, efds);
 }
 
-static void slirp_select_poll1(EthernetDevice *net, 
+void slirp_select_poll1(EthernetDevice *net,
                                fd_set *rfds, fd_set *wfds, fd_set *efds,
                                int select_ret)
 {
