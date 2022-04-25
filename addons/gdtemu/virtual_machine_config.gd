@@ -4,8 +4,10 @@ tool
 extends Resource
 
 const BlockDevice := preload("./device/block_device.gd")
+const NetDevice := preload("./device/net_device.gd")
 
 const MAX_BLOCK_DEVICES := 4
+const MAX_NET_DEVICES := 1
 
 enum MachineClass {
 	PC = 1,
@@ -22,6 +24,7 @@ export(String, FILE) var bios := ""
 export(String, FILE) var kernel := ""
 export(String) var cmdline := ""
 export(Array, Resource) var block_devices := [] setget set_block_devices
+export(Array, Resource) var net_devices := [] setget set_net_devices
 
 
 func _init(
@@ -55,3 +58,7 @@ func _set_devices(value: Array, type: String) -> Array:
 
 func set_block_devices(value := []):
 	block_devices = _set_devices(value, "Block")
+
+
+func set_net_devices(value := []):
+	net_devices = _set_devices(value, "Net")

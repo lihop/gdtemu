@@ -24,6 +24,9 @@ typedef struct BlockDeviceFile {
 
 BlockDevice *block_device_init(const char *filename, BlockDeviceModeEnum mode);
 
+void slirp_write_packet(EthernetDevice *net, const uint8_t *buf, int len);
+void slirp_select_fill1(EthernetDevice *net, int *pfd_max, fd_set *rfds, fd_set *wfds, fd_set *efds, int *pdelay);
+void slirp_select_poll1(EthernetDevice *net, fd_set *rfds, fd_set *wfds, fd_set *efds, int select_ret);
 EthernetDevice *slirp_open(void);
 
 void virt_machine_run(VirtMachine *m);

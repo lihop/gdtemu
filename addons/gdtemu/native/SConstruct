@@ -190,6 +190,8 @@ elif env['platform'] == 'windows':
 # Build TinyEMU as a static library.
 env.Append(CPPDEFINES=['-DCONFIG_VERSION=\\"2019-02-10\\"'])
 env.Append(CPPDEFINES=['-DCONFIG_RISCV_MAX_XLEN=64'])
+env.Append(CPPDEFINES=['-DCONFIG_SLIRP=y'])
+
 if env['platform'] == 'linux':
     env.Append(CPPDEFINES=['-DCONFIG_X86EMU=y'])
 
@@ -213,9 +215,6 @@ env.Append(CPPPATH=[
 ])
 
 sources = []
-
-env.Append(CPPDEFINES=['-DCONFIG_SLIRP=y'])
-
 sources.append(['thirdparty/TinyEMU/' + f for f in [
     'virtio.c', 'pci.c', 'fs.c', 'cutils.c', 'iomem.c', 'simplefb.c', 'json.c', 'machine.c', 'elf.c',
 ]])
@@ -274,6 +273,8 @@ sources.append('src/libgdtemu.cpp')
 # Compressed initramfs support.
 env.Append(CPPDEFINES=['CONFIG_INITRAMFS=y'])
 env.Append(LINKFLAGS=['-lz'])
+
+env.Append(LINKFLAGS=['-lpthread'])
 
 if env['platform'] == 'linux':
     libsuffix = "a"

@@ -30,15 +30,12 @@ enum Priority {
 export(Resource) var config = null setget set_config
 export(bool) var autostart := false
 export(bool) var use_threads := true
-export(Priority) var thread_priority := Priority.NORMAL
 export(int) var max_sleep_time_ms := 10
 export(int) var max_exec_cycles := 5000000
 
 var paused := false setget set_paused
 
 var _native_vm: NativeVM
-var _thread: Thread
-var _mutex := Mutex.new()
 var _state := STATE_IDLE
 var _console_buffer := PoolByteArray()
 var _buffer_dirty := false
@@ -49,7 +46,6 @@ func set_config(value: VirtualMachineConfig) -> void:
 
 
 func _ready():
-	set_process(false)
 	if autostart and not Engine.editor_hint:
 		start()
 
@@ -68,22 +64,15 @@ func start() -> int:
 	_state = STATE_RUNNING
 	if use_threads:
 		_native_vm.connect("console_wrote", self, "_on_console_wrote", [], CONNECT_DEFERRED)
-		_thread = Thread.new()
-		return _thread.start(self, "_thread_process", null, thread_priority)
+		return _native_vm.run_thread(max_sleep_time_ms, max_exec_cycles)
 	else:
 		_native_vm.connect("console_wrote", self, "_on_console_wrote")
-		set_process(true)
 
 	return OK
 
 
 func _process(_delta: float) -> void:
-	if _native_vm:
-		_native_vm.run(max_sleep_time_ms, max_exec_cycles)
-
-
-func _thread_process(_data := null) -> void:
-	while _state == STATE_RUNNING:
+	if not use_threads and _native_vm and _state == STATE_RUNNING:
 		_native_vm.run(max_sleep_time_ms, max_exec_cycles)
 
 
@@ -91,26 +80,20 @@ func set_paused(value: bool) -> void:
 	paused = value
 	if paused and _state == STATE_RUNNING:
 		_state = STATE_PAUSED
-		set_process(false)
-		if _thread.is_active():
-			_thread.wait_to_finish()
+		if use_threads:
+			_native_vm.stop_thread()
 	elif not paused and _state == STATE_PAUSED:
 		_state = STATE_RUNNING
 		if use_threads:
-			_thread = Thread.new()
-			_thread.start(self, "_thread_process", null, thread_priority)
-		else:
-			set_process(true)
+			_native_vm.run_thread(max_sleep_time_ms, max_exec_cycles)
 
 
 func stop():
 	if _state == STATE_RUNNING or _state == STATE_PAUSED:
 		_state = STATE_STOPPED
-		if _thread and _thread.is_active():
-			_thread.wait_to_finish()
-		if _native_vm:
-			_native_vm.stop()
-			_native_vm = null
+		if use_threads:
+			_native_vm.stop_thread()
+		_native_vm.stop()
 
 
 func _exit_tree():

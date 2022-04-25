@@ -8,9 +8,18 @@ signal paused
 signal unpaused
 
 export(bool) var autostart := false
+export(String) var note := "" setget set_note, get_note
 
 var powered_on := false
 var paused := false
+
+
+func set_note(value: String) -> void:
+	$_/_/Label.text = value
+
+
+func get_note() -> String:
+	return $_/_/Label.text
 
 
 func _ready():

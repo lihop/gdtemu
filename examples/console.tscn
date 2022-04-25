@@ -45,5 +45,12 @@ disabled = true
 toggle_mode = true
 text = "Pause/Unpause"
 
+[node name="Label" type="Label" parent="_/_"]
+margin_left = 217.0
+margin_top = 3.0
+margin_right = 1010.0
+margin_bottom = 17.0
+size_flags_horizontal = 3
+
 [connection signal="toggled" from="_/_/PowerButton" to="." method="_on_PowerButton_toggled"]
 [connection signal="toggled" from="_/_/PauseButton" to="." method="_on_PauseButton_toggled"]

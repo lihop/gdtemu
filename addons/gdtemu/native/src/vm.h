@@ -13,8 +13,12 @@ extern "C" {
   #include "virtio.h"
   #include "machine.h"
   #include "temu.h"
+  #ifdef CONFIG_SLIRP
+  #include "slirp/libslirp.h"
+  #endif
 }
 
+#include <set>
 #include <Godot.hpp>
 #include <Resource.hpp>
 
@@ -38,11 +42,22 @@ public:
   void run(int max_sleep_time_ms, int max_exec_cycles);
   void stop();
 
+  int run_thread(int max_sleep_time_ms, int max_exec_cycles);
+  void stop_thread();
+
   godot_error console_read(PoolByteArray data);
   void console_resize(int width, int height);
 
+  bool thread_running = false;
+
 private:
   VirtMachine *vm;
+  pthread_t thread;
+
+public:
+  static std::set<pthread_t> threads;
+  static pthread_t main_thread;
+  Slirp* slirp_state;
 };
 } // namespace godot
 

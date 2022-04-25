@@ -5,11 +5,11 @@
 [ext_resource path="res://examples/pc/pc_config.tres" type="Resource" id=3]
 
 [node name="Console" instance=ExtResource( 2 )]
+note = "user: root | password: root | Try running `ssh root@127.0.0.1 -p 5077` on the host to connect to the VM"
 
 [node name="VirtualMachine" type="Node" parent="." index="1"]
 script = ExtResource( 1 )
 config = ExtResource( 3 )
-thread_priority = 2
 
 [connection signal="paused" from="." to="VirtualMachine" method="set" binds= [ "paused", true ]]
 [connection signal="powered_off" from="." to="VirtualMachine" method="stop"]

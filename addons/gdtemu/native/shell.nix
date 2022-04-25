@@ -16,10 +16,11 @@ in pkgs.mkShell {
     docker
     docker-compose
 
-    # Dependencies of TinyEMU.
+    # Dependencies of TinyEMU/SLiRP.
     openssl
     zlib.dev
     SDL2
     curl
+    glib.dev
   ];
 }

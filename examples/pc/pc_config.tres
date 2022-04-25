@@ -1,12 +1,18 @@
-[gd_resource type="Resource" load_steps=4 format=2]
+[gd_resource type="Resource" load_steps=6 format=2]
 
 [ext_resource path="res://addons/gdtemu/device/block_device.gd" type="Script" id=1]
 [ext_resource path="res://addons/gdtemu/virtual_machine_config.gd" type="Script" id=2]
+[ext_resource path="res://addons/gdtemu/device/net_device.gd" type="Script" id=3]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 1 )
 file = "res://examples/pc/rootfs.ext2"
 mode = 0
+
+[sub_resource type="Resource" id=2]
+script = ExtResource( 3 )
+driver = 0
+port_forwards = PoolStringArray( "tcp:127.0.0.1:5077-0.0.0.0:22" )
 
 [resource]
 script = ExtResource( 2 )
@@ -16,3 +22,4 @@ bios = ""
 kernel = "res://examples/pc/bzImage"
 cmdline = "loglevel=3 console=hvc0 root=/dev/vda ro"
 block_devices = [ SubResource( 1 ) ]
+net_devices = [ SubResource( 2 ) ]

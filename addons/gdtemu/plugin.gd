@@ -12,8 +12,10 @@ func _enter_tree():
 		preload("./icons/virtual_machine_icon.svg")
 	)
 	add_custom_type("BlockDevice", "Resource", preload("./device/block_device.gd"), null)
+	add_custom_type("NetDevice", "Resource", preload("./device/net_device.gd"), null)
 
 
 func _exit_tree():
-	remove_custom_type("VirtualMachine")
+	remove_custom_type("NetDevice")
 	remove_custom_type("BlockDevice")
+	remove_custom_type("VirtualMachine")
