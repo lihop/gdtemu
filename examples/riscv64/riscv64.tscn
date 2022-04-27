@@ -10,7 +10,6 @@ autostart = false
 [node name="VirtualMachine" type="Node" parent="." index="1"]
 script = ExtResource( 1 )
 config = ExtResource( 2 )
-thread_priority = 2
 
 [connection signal="paused" from="." to="VirtualMachine" method="set" binds= [ "paused", true ]]
 [connection signal="powered_off" from="." to="VirtualMachine" method="stop"]
