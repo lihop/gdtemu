@@ -7,7 +7,8 @@
 #include <signal.h>
 #include <sys/time.h>
 
-#include <ProjectSettings.hpp>
+#include <File.hpp>
+#include <OS.hpp>
 
 #include "vm.h"
 
@@ -46,6 +47,27 @@ static void on_alarm(int sig) {
     pthread_t thread = *ptr;
     pthread_kill(thread, sig);
   }
+}
+
+static int load_file(uint8_t **pbuf, String filename) {
+  File *file = File::_new();
+  Error err = file->open(filename, File::READ);
+
+  if (err != Error::OK) {
+    ERR_PRINT("Failed to load file: '" + filename + "'.");
+    // Flip the sign so that we can detect an error (i.e. len < 0),
+    // and then flip it back to return the original error enum.
+    return -(int)err;
+  }
+
+  int64_t len = file->get_len();
+  PoolByteArray bytes = file->get_buffer(len);
+  uint8_t *buf = new uint8_t[len];
+
+  { memcpy(buf, bytes.read().ptr(), len); }
+
+  *pbuf = buf;
+  return len;
 }
 
 static EthernetDevice *slirp_open(void *opaque) {
@@ -97,9 +119,121 @@ static void _console_write(void *opaque, const uint8_t *buf, int len) {
   vm->emit_signal("console_wrote", data);
 }
 
-godot_error VM::start(Resource *config) {
-  ProjectSettings *proj_settings = ProjectSettings::get_singleton();
+typedef struct BlockDeviceFile {
+  File *f;
+  int64_t nb_sectors;
+  BlockDeviceModeEnum mode;
+  uint8_t **sector_table;
+} BlockDeviceFile;
 
+static int64_t bf_get_sector_count(BlockDevice *bs) {
+  BlockDeviceFile *bf = static_cast<BlockDeviceFile *>(bs->opaque);
+  return bf->nb_sectors;
+}
+
+static int bf_read_async(BlockDevice *bs, uint64_t sector_num, uint8_t *buf,
+                         int n, BlockDeviceCompletionFunc *cb, void *opaque) {
+  BlockDeviceFile *bf = static_cast<BlockDeviceFile *>(bs->opaque);
+
+  if (!bf->f) {
+    return -1;
+  }
+
+  if (bf->mode == BF_MODE_SNAPSHOT) {
+    int i;
+    for (i = 0; i < n; i++) {
+      if (!bf->sector_table[sector_num]) {
+        bf->f->seek(sector_num * SECTOR_SIZE);
+        PoolByteArray bytes = bf->f->get_buffer(SECTOR_SIZE);
+        memcpy(buf, bytes.read().ptr(), SECTOR_SIZE);
+      } else {
+        memcpy(buf, bf->sector_table[sector_num], SECTOR_SIZE);
+      }
+      sector_num++;
+      buf += SECTOR_SIZE;
+    }
+  } else {
+    bf->f->seek(sector_num * SECTOR_SIZE);
+    int len = n * SECTOR_SIZE;
+    PoolByteArray bytes = bf->f->get_buffer(len);
+    memcpy(buf, bytes.read().ptr(), len);
+  }
+
+  return 0;
+}
+
+static int bf_write_async(BlockDevice *bs, uint64_t sector_num,
+                          const uint8_t *buf, int n,
+                          BlockDeviceCompletionFunc *cb, void *opaque) {
+  BlockDeviceFile *bf = static_cast<BlockDeviceFile *>(bs->opaque);
+  int ret;
+
+  switch (bf->mode) {
+  case BF_MODE_RW: {
+    bf->f->seek(sector_num * SECTOR_SIZE);
+    PoolByteArray bytes = PoolByteArray();
+    bytes.resize(n * SECTOR_SIZE);
+    { memcpy(bytes.write().ptr(), buf, n * SECTOR_SIZE); }
+    bf->f->store_buffer(bytes);
+    ret = 0;
+  } break;
+  case BF_MODE_SNAPSHOT: {
+    int i;
+    if ((sector_num + n) > bf->nb_sectors)
+      return -1;
+    for (i = 0; i < n; i++) {
+      if (!bf->sector_table[sector_num]) {
+        bf->sector_table[sector_num] = new uint8_t[SECTOR_SIZE];
+      }
+      memcpy(bf->sector_table[sector_num], buf, SECTOR_SIZE);
+      sector_num++;
+      buf += SECTOR_SIZE;
+    }
+    ret = 0;
+  } break;
+  case BF_MODE_RO:
+  default:
+    ret = -1; /* error */
+  }
+
+  return ret;
+}
+
+static BlockDevice *block_device_init(String file, BlockDeviceModeEnum mode) {
+  BlockDevice *bs;
+  BlockDeviceFile *bf;
+  int64_t file_size;
+  File *f = File::_new();
+
+  Error err = f->open(file, mode == BF_MODE_RW ? File::READ_WRITE : File::READ);
+  if (err != Error::OK) {
+    ERR_PRINT("Failed to open file '" + file + "'.");
+  }
+
+  f->seek_end();
+  file_size = f->get_len();
+
+  bs = new BlockDevice;
+  bf = new BlockDeviceFile;
+
+  bf->mode = mode;
+  bf->nb_sectors = file_size / 512;
+  bf->f = f;
+
+  if (mode == BF_MODE_SNAPSHOT) {
+    bf->sector_table =
+        (uint8_t **)mallocz(sizeof(bf->sector_table[0]) * bf->nb_sectors);
+  }
+
+  bs->opaque = bf;
+  bs->get_sector_count = bf_get_sector_count;
+  bs->read_async = bf_read_async;
+  bs->write_async = bf_write_async;
+
+  return bs;
+}
+
+godot_error VM::start(Resource *config) {
   VirtMachineParams params_s, *params = &params_s;
   virt_machine_set_defaults(params);
 
@@ -129,18 +263,24 @@ godot_error VM::start(Resource *config) {
   int ram_size = config->get("memory_size");
   params->ram_size = (uint64_t)ram_size << 20;
 
-  String bios = proj_settings->globalize_path(config->get("bios"));
+  String bios = config->get("bios");
   if (!bios.empty()) {
     VMFileEntry *entry = &params->files[VM_FILE_BIOS];
     entry->filename = bios.alloc_c_string();
     entry->len = load_file(&entry->buf, entry->filename);
+    if (entry->len < 0) {
+      return (godot_error)-entry->len;
+    }
   }
 
-  String kernel = proj_settings->globalize_path(config->get("kernel"));
+  String kernel = config->get("kernel");
   if (!kernel.empty()) {
     VMFileEntry *entry = &params->files[VM_FILE_KERNEL];
     entry->filename = kernel.alloc_c_string();
     entry->len = load_file(&entry->buf, entry->filename);
+    if (entry->len < 0) {
+      return (godot_error)-entry->len;
+    }
   }
 
   String cmdline = config->get("cmdline");
@@ -153,10 +293,29 @@ godot_error VM::start(Resource *config) {
   for (int i = 0; i < block_devices.size(); i++) {
     BlockDevice *drive;
     Resource *device = block_devices[i];
-    String file = proj_settings->globalize_path(device->get("file"));
-    int mode = device->get("mode");
-    char *fname = file.alloc_c_string();
-    drive = block_device_init(fname, (BlockDeviceModeEnum)mode);
+    String file = device->get("file");
+    BlockDeviceModeEnum mode = (BlockDeviceModeEnum)(int)device->get("mode");
+
+    String res_prefix = "res://";
+    if (file.begins_with(res_prefix) && mode == BF_MODE_RW) {
+      // File is in 'res://' and NOT read-only. It will not be openable in
+      // exported projects!
+      String msg = "File '" + file +
+                   "' cannot be opened 'Read Write' in exported project.";
+
+      if (OS::get_singleton()->has_feature("standalone")) {
+        // Exported project.
+        ERR_PRINT(msg);
+        return GODOT_ERR_FILE_CANT_WRITE;
+      } else {
+        // Project run from editor.
+        WARN_PRINT(msg);
+        drive = block_device_init(file, mode);
+      }
+    } else {
+      drive = block_device_init(file, mode);
+    }
+
     params->tab_drive[i].block_dev = drive;
   }
 
