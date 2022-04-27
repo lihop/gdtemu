@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id=1]
 script = ExtResource( 1 )
 file = "res://examples/riscv32/rootfs.ext2"
-mode = 0
+mode = 2
 
 [resource]
 script = ExtResource( 2 )
@@ -14,5 +14,6 @@ machine_class = 2
 memory_size = 256
 bios = "res://examples/riscv32/bbl32.bin"
 kernel = "res://examples/riscv32/Image"
-cmdline = "console=hvc0 root=/dev/vda ro"
+cmdline = "console=hvc0 root=/dev/vda rw"
 block_devices = [ SubResource( 1 ) ]
+net_devices = [  ]
