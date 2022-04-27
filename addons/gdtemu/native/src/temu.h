@@ -15,15 +15,6 @@ typedef enum {
 
 #define SECTOR_SIZE 512
 
-typedef struct BlockDeviceFile {
-  FILE *f;
-  int64_t nb_sectors;
-  BlockDeviceModeEnum mode;
-  uint8_t **sector_table;
-} BlockDeviceFile;
-
-BlockDevice *block_device_init(const char *filename, BlockDeviceModeEnum mode);
-
 void slirp_write_packet(EthernetDevice *net, const uint8_t *buf, int len);
 void slirp_select_fill1(EthernetDevice *net, int *pfd_max, fd_set *rfds,
                         fd_set *wfds, fd_set *efds, int *pdelay);
