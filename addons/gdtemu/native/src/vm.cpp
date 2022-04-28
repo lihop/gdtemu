@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz> 
+// SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz>
 // SPDX-FileCopyrightText: 2019 Fernando Lemos
 // SPDX-FileCopyrightText: 2016-2018 Fabrice Bellard
 // SPDX-License-Identifier: MIT
 
-#include <signal.h>
 #include <arpa/inet.h>
+#include <signal.h>
 #include <sys/time.h>
 
 #include <ProjectSettings.hpp>
@@ -14,7 +14,8 @@
 using namespace godot;
 
 void VM::_register_methods() {
-  register_signal<VM>("console_wrote", "data", GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY);
+  register_signal<VM>("console_wrote", "data",
+                      GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY);
 
   register_method("_init", &VM::_init);
 
@@ -32,9 +33,9 @@ void VM::_register_methods() {
 std::set<pthread_t> VM::threads = {};
 pthread_t VM::main_thread = pthread_self();
 
-// SIGALRM is used to interrupt execution of KVM, however setitimer() and ualarm()
-// only set one alarm per process and the signal is sent only to the main thread.
-// Therefore, we must propagate the signal to other threads.
+// SIGALRM is used to interrupt execution of KVM, however setitimer() and
+// ualarm() only set one alarm per process and the signal is sent only to the
+// main thread. Therefore, we must propagate the signal to other threads.
 static void on_alarm(int sig) {
   if (!pthread_equal(pthread_self(), VM::main_thread)) {
     return;
@@ -47,24 +48,23 @@ static void on_alarm(int sig) {
   }
 }
 
-static EthernetDevice *slirp_open(void* opaque)
-{
-  VM* vm = static_cast<VM*>(opaque);
+static EthernetDevice *slirp_open(void *opaque) {
+  VM *vm = static_cast<VM *>(opaque);
 
   EthernetDevice *net;
-  struct in_addr net_addr  = { .s_addr = htonl(0x0a000200) }; /* 10.0.2.0 */
-  struct in_addr mask = { .s_addr = htonl(0xffffff00) }; /* 255.255.255.0 */
-  struct in_addr host = { .s_addr = htonl(0x0a000202) }; /* 10.0.2.2 */
-  struct in_addr dhcp = { .s_addr = htonl(0x0a00020f) }; /* 10.0.2.15 */
-  struct in_addr dns  = { .s_addr = htonl(0x0a000203) }; /* 10.0.2.3 */
+  struct in_addr net_addr = {.s_addr = htonl(0x0a000200)}; /* 10.0.2.0 */
+  struct in_addr mask = {.s_addr = htonl(0xffffff00)};     /* 255.255.255.0 */
+  struct in_addr host = {.s_addr = htonl(0x0a000202)};     /* 10.0.2.2 */
+  struct in_addr dhcp = {.s_addr = htonl(0x0a00020f)};     /* 10.0.2.15 */
+  struct in_addr dns = {.s_addr = htonl(0x0a000203)};      /* 10.0.2.3 */
   const char *bootfile = NULL;
   const char *vhostname = NULL;
   int restricted = 0;
 
-  net = (EthernetDevice*)mallocz(sizeof(*net));
-  
-  vm->slirp_state = slirp_init(restricted, net_addr, mask, host, vhostname,
-                           "", bootfile, dhcp, dns, net);
+  net = (EthernetDevice *)mallocz(sizeof(*net));
+
+  vm->slirp_state = slirp_init(restricted, net_addr, mask, host, vhostname, "",
+                               bootfile, dhcp, dns, net);
 
   net->mac_addr[0] = 0x02;
   net->mac_addr[1] = 0x00;
@@ -76,7 +76,7 @@ static EthernetDevice *slirp_open(void* opaque)
   net->write_packet = slirp_write_packet;
   net->select_fill = slirp_select_fill1;
   net->select_poll = slirp_select_poll1;
-  
+
   return net;
 }
 
@@ -85,19 +85,15 @@ VM::~VM() {}
 
 void VM::_init() {}
 
-static int _console_read(void *opaque, uint8_t *buf,int len) {
-  return 0;
-}
+static int _console_read(void *opaque, uint8_t *buf, int len) { return 0; }
 
 static void _console_write(void *opaque, const uint8_t *buf, int len) {
   PoolByteArray data = PoolByteArray();
   data.resize(len);
 
-  {
-    memcpy(data.write().ptr(), buf, len);
-  }
+  { memcpy(data.write().ptr(), buf, len); }
 
-  VM *vm = static_cast<VM*>(opaque);
+  VM *vm = static_cast<VM *>(opaque);
   vm->emit_signal("console_wrote", data);
 }
 
@@ -109,20 +105,20 @@ godot_error VM::start(Resource *config) {
 
   int machine_class = config->get("machine_class");
   if (machine_class == 1) {
-    params->machine_name = (char*)"pc";
+    params->machine_name = (char *)"pc";
     params->vmc = &pc_machine_class;
   } else if (machine_class >= 2 && machine_class <= 4) {
     params->vmc = &riscv_machine_class;
     switch (machine_class) {
-      case 2:
-        params->machine_name = (char*)"riscv32"; 
-        break;
-      case 3:
-        params->machine_name = (char*)"riscv64"; 
-        break;
-      case 4:
-        params->machine_name = (char*)"riscv128";
-        break;
+    case 2:
+      params->machine_name = (char *)"riscv32";
+      break;
+    case 3:
+      params->machine_name = (char *)"riscv64";
+      break;
+    case 4:
+      params->machine_name = (char *)"riscv128";
+      break;
     }
   } else {
     ERR_PRINT("Unrecognized machine class.");
@@ -171,34 +167,35 @@ godot_error VM::start(Resource *config) {
     Resource *device = net_devices[i];
     int driver = device->get("driver");
     switch (driver) {
-      case 0:
-        params->tab_eth[i].net = slirp_open(this);
-        Array port_forwards = device->call("_get_port_forwards_parsed");
-        for (int i = 0; i < port_forwards.size(); i++) {
-          Dictionary port_forward = port_forwards[i];
+    case 0:
+      params->tab_eth[i].net = slirp_open(this);
+      Array port_forwards = device->call("_get_port_forwards_parsed");
+      for (int i = 0; i < port_forwards.size(); i++) {
+        Dictionary port_forward = port_forwards[i];
 
-          String proto = port_forward["proto"];
-          bool is_udp = proto == String("udp");
+        String proto = port_forward["proto"];
+        bool is_udp = proto == String("udp");
 
-          String host_addr_str = port_forward["host_addr"];
-          struct in_addr host_addr = in_addr { 0 };
-          inet_pton(AF_INET, host_addr_str.alloc_c_string(), &host_addr.s_addr);
-          int host_port = port_forward["host_port"];
+        String host_addr_str = port_forward["host_addr"];
+        struct in_addr host_addr = in_addr{0};
+        inet_pton(AF_INET, host_addr_str.alloc_c_string(), &host_addr.s_addr);
+        int host_port = port_forward["host_port"];
 
-          String guest_addr_str = port_forward["guest_addr"];
-          struct in_addr guest_addr = in_addr { 0 };
-          inet_pton(AF_INET, guest_addr_str.alloc_c_string(), &guest_addr.s_addr);
-          int guest_port = port_forward["guest_port"];
+        String guest_addr_str = port_forward["guest_addr"];
+        struct in_addr guest_addr = in_addr{0};
+        inet_pton(AF_INET, guest_addr_str.alloc_c_string(), &guest_addr.s_addr);
+        int guest_port = port_forward["guest_port"];
 
-          slirp_add_hostfwd(slirp_state, is_udp, in_addr { host_addr.s_addr }, host_port, in_addr { guest_addr.s_addr }, guest_port);
-        }
-        break;
+        slirp_add_hostfwd(slirp_state, is_udp, in_addr{host_addr.s_addr},
+                          host_port, in_addr{guest_addr.s_addr}, guest_port);
+      }
+      break;
     }
   }
 
   params->rtc_real_time = TRUE;
 
-  CharacterDevice *console = new CharacterDevice(); 
+  CharacterDevice *console = new CharacterDevice();
   console->opaque = this;
   console->read_data = _console_read;
   console->write_data = _console_write;
@@ -206,13 +203,14 @@ godot_error VM::start(Resource *config) {
 
   vm = virt_machine_init(params);
   if (!vm) {
-     return GODOT_FAILED;
+    return GODOT_FAILED;
   }
 
   return GODOT_OK;
 }
 
-void VM::run(int max_sleep_time_ms = MAX_SLEEP_TIME, int max_exec_cycles = MAX_EXEC_CYCLES) {
+void VM::run(int max_sleep_time_ms = MAX_SLEEP_TIME,
+             int max_exec_cycles = MAX_EXEC_CYCLES) {
   fd_set rfds, wfds, efds;
   int fd_max, ret, delay;
   struct timeval tv;
@@ -238,8 +236,8 @@ void VM::run(int max_sleep_time_ms = MAX_SLEEP_TIME, int max_exec_cycles = MAX_E
   virt_machine_interp(vm, max_exec_cycles);
 }
 
-static void* thread_func(void* opaque) {
-  VM* vm = static_cast<VM*>(opaque); 
+static void *thread_func(void *opaque) {
+  VM *vm = static_cast<VM *>(opaque);
   int max_sleep_time_ms = vm->get_meta("max_sleep_time_ms");
   int max_exec_cycles = vm->get_meta("max_exec_cycles");
 
@@ -250,7 +248,8 @@ static void* thread_func(void* opaque) {
   return nullptr;
 }
 
-int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME, int max_exec_cycles = MAX_EXEC_CYCLES) {
+int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
+                   int max_exec_cycles = MAX_EXEC_CYCLES) {
   if (thread_running) {
     return GODOT_ERR_ALREADY_IN_USE;
   }
@@ -269,10 +268,10 @@ int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME, int max_exec_cycles =
 
   /* Set up handler for SIGALRM */
   struct sigaction act;
-	act.sa_handler = &on_alarm;
-	sigemptyset (&act.sa_mask);
-	act.sa_flags = SA_SIGINFO;
-	sigaction (SIGALRM, &act, NULL);
+  act.sa_handler = &on_alarm;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags = SA_SIGINFO;
+  sigaction(SIGALRM, &act, NULL);
 
   return GODOT_OK;
 }
@@ -300,7 +299,7 @@ void VM::stop() {
 
 godot_error VM::console_read(PoolByteArray data) {
   if (!vm->console_dev) {
-    return GODOT_ERR_DOES_NOT_EXIST; 
+    return GODOT_ERR_DOES_NOT_EXIST;
   } else if (!virtio_console_can_write_data(vm->console_dev)) {
     return GODOT_ERR_BUSY;
   }

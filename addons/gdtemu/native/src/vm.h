@@ -5,22 +5,22 @@
 #define GODOT_GDTEMU_VM_H
 
 extern "C" {
-  #if defined(__linux__) && !defined(_WIN32) && !defined(__APPLE__)
-  #include <net/if.h>
-  #endif
+#if defined(__linux__) && !defined(_WIN32) && !defined(__APPLE__)
+#include <net/if.h>
+#endif
+#include "cutils.h"
+#include "virtio.h"
 
-  #include "cutils.h"
-  #include "virtio.h"
-  #include "machine.h"
-  #include "temu.h"
-  #ifdef CONFIG_SLIRP
-  #include "slirp/libslirp.h"
-  #endif
+#include "machine.h"
+#include "temu.h"
+#ifdef CONFIG_SLIRP
+#include "slirp/libslirp.h"
+#endif
 }
 
-#include <set>
 #include <Godot.hpp>
 #include <Resource.hpp>
+#include <set>
 
 #define MAX_EXEC_CYCLES 500000
 #define MAX_SLEEP_TIME 10 /* in ms */
@@ -57,8 +57,8 @@ private:
 public:
   static std::set<pthread_t> threads;
   static pthread_t main_thread;
-  Slirp* slirp_state;
+  Slirp *slirp_state;
 };
 } // namespace godot
 
-#endif // GODOT_GDTEMU_VM_H 
+#endif // GODOT_GDTEMU_VM_H
