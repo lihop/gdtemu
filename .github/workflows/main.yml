@@ -35,7 +35,7 @@ jobs:
 
   build-docker:
     # Build inside docker container in order to target older GLIBC versions.
-    name: 'Build Docker'
+    name: 'Build Docker (${{ matrix.target }}, ${{ matrix.bits }}) #${{ github.run_number }}'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -151,7 +151,7 @@ jobs:
         uses: fountainhead/action-wait-for-check@v1.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Build Docker (release, ${{ matrix.bits }}) 
+          checkName: 'Build Docker (release, ${{ matrix.bits }}) #${{ github.run_number }}'
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           intervalSeconds: 3
       - name: Install binary build artifacts
