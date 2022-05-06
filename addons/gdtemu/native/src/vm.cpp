@@ -8,7 +8,6 @@
 #include <signal.h>
 #include <sys/time.h>
 
-#include <File.hpp>
 #include <OS.hpp>
 
 #include "vm.h"
@@ -67,6 +66,9 @@ static int load_file(uint8_t **pbuf, String filename) {
 
   { memcpy(buf, bytes.read().ptr(), len); }
 
+  file->close();
+  file->free();
+
   *pbuf = buf;
   return len;
 }
@@ -120,21 +122,14 @@ static void _console_write(void *opaque, const uint8_t *buf, int len) {
   vm->emit_signal("console_wrote", data);
 }
 
-typedef struct BlockDeviceFile {
-  File *f;
-  int64_t nb_sectors;
-  BlockDeviceModeEnum mode;
-  uint8_t **sector_table;
-} BlockDeviceFile;
-
 static int64_t bf_get_sector_count(BlockDevice *bs) {
-  BlockDeviceFile *bf = static_cast<BlockDeviceFile *>(bs->opaque);
+  VM::BlockDeviceFile *bf = static_cast<VM::BlockDeviceFile *>(bs->opaque);
   return bf->nb_sectors;
 }
 
 static int bf_read_async(BlockDevice *bs, uint64_t sector_num, uint8_t *buf,
                          int n, BlockDeviceCompletionFunc *cb, void *opaque) {
-  BlockDeviceFile *bf = static_cast<BlockDeviceFile *>(bs->opaque);
+  VM::BlockDeviceFile *bf = static_cast<VM::BlockDeviceFile *>(bs->opaque);
 
   if (!bf->f) {
     return -1;
@@ -166,7 +161,7 @@ static int bf_read_async(BlockDevice *bs, uint64_t sector_num, uint8_t *buf,
 static int bf_write_async(BlockDevice *bs, uint64_t sector_num,
                           const uint8_t *buf, int n,
                           BlockDeviceCompletionFunc *cb, void *opaque) {
-  BlockDeviceFile *bf = static_cast<BlockDeviceFile *>(bs->opaque);
+  VM::BlockDeviceFile *bf = static_cast<VM::BlockDeviceFile *>(bs->opaque);
   int ret;
 
   switch (bf->mode) {
@@ -202,7 +197,7 @@ static int bf_write_async(BlockDevice *bs, uint64_t sector_num,
 
 static BlockDevice *block_device_init(String file, BlockDeviceModeEnum mode) {
   BlockDevice *bs;
-  BlockDeviceFile *bf;
+  VM::BlockDeviceFile *bf;
   int64_t file_size;
   File *f = File::_new();
 
@@ -215,7 +210,7 @@ static BlockDevice *block_device_init(String file, BlockDeviceModeEnum mode) {
   file_size = f->get_len();
 
   bs = new BlockDevice;
-  bf = new BlockDeviceFile;
+  bf = new VM::BlockDeviceFile;
 
   bf->mode = mode;
   bf->nb_sectors = file_size / 512;
@@ -450,10 +445,6 @@ void VM::stop_thread() {
 void VM::stop() {
   if (vm != nullptr) {
     virt_machine_end(vm);
-    if (slirp_state) {
-      slirp_cleanup(slirp_state);
-      slirp_state = nullptr;
-    }
   }
 }
 

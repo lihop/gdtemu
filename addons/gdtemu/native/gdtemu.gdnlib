@@ -8,7 +8,9 @@ reloadable=true
 [entry]
 
 X11.64="res://addons/gdtemu/native/bin/libgdtemu.linux.64.so"
+X11.32="res://addons/gdtemu/native/bin/libgdtemu.linux.32.so"
 
 [dependencies]
 
 X11.64=[  ]
+X11.32=[  ]

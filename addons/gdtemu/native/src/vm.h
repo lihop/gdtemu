@@ -18,6 +18,7 @@ extern "C" {
 #endif
 }
 
+#include <File.hpp>
 #include <Godot.hpp>
 #include <Resource.hpp>
 #include <set>
@@ -58,6 +59,14 @@ public:
   static std::set<pthread_t> threads;
   static pthread_t main_thread;
   Slirp *slirp_state;
+
+  class BlockDeviceFile {
+  public:
+    File *f;
+    int64_t nb_sectors;
+    BlockDeviceModeEnum mode;
+    uint8_t **sector_table;
+  };
 };
 } // namespace godot
 
