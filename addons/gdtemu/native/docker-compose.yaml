@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2022 Leroy Hopson <copyright@leroy.geek.nz>
+# SPDX-License-Identifier: MIT
+services:
+  godot-cpp:
+    build: .
+    user: ${UID_GID}
+    volumes:
+      - .:/src
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cd /src/thirdparty/godot-cpp
+        scons generate_bindings=yes target=$${TARGET} bits=$${BITS} -j$$(nproc)
+  gdtemu-linux:
+    build: .
+    user: ${UID_GID}
+    volumes:
+      - .:/src
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cd /src
+        scons target=$${TARGET} bits=$${BITS} -j$$(nproc)
