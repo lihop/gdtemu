@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2021 Leroy Hopson <copyright@leroy.geek.nz> 
+# SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz>
 # SPDX-License-Identifier: MIT
 set -e
 
@@ -13,12 +13,13 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    --disable-pty)
-      disable_pty="yes"
+    -b|--bits)
+      bits="$2"
+      shift
       shift
       ;;
     *)
-      echo "Usage: ./build.sh [-t|--target <release|debug>] [--disable_pty]";
+      echo "Usage: ./build.sh [-t|--target <release|debug>] [-b|--bits <32|64>]";
       exit 128
       shift
       ;;
@@ -27,10 +28,10 @@ done
 
 # Set defaults.
 target=${target:-debug}
-disable_pty=${disable_pty:-no}
+bits=${bits:-64}
 nproc=$(nproc || sysctl -n hw.ncpu)
 
-#GODOT_DIR Get the absolute path to the directory this script is in.
+# Get the absolute path to the directory this script is in.
 NATIVE_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Run script inside a nix shell if it is available.
@@ -50,13 +51,13 @@ updateSubmodules() {
 	fi
 }
 
-updateSubmodules TINYEMU_DIR ${NATIVE_DIR}/thirdparty/TinyEMU
 updateSubmodules GODOT_CPP_DIR ${NATIVE_DIR}/thirdparty/godot-cpp
+updateSubmodules TINYEMU_DIR ${NATIVE_DIR}/thirdparty/TinyEMU
 
 # Build godot-cpp bindings.
 cd ${GODOT_CPP_DIR}
-scons target=$target -j$nproc #generate_bindings=yes target=$target -j$nproc
+scons generate_bindings=yes target=$target bits=$bits -j$nproc
 
-## Build libgdtemu.
+# Build libgdtemu.
 cd ${NATIVE_DIR}
-scons target=$target -j$nproc
+scons target=$target bits=$bits -j$nproc

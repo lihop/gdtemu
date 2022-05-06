@@ -5,6 +5,10 @@ on:
   schedule: # Keep the cache alive!
     - cron: 7 1 * * fri
 
+env:
+  # Manually invalidate cache by incrementing this number.
+  GODOT_CPP_CACHE_VERSION: 1
+
 jobs:
   reuse-compliance-check:
     name: 'Check REUSE Compliance'
@@ -12,9 +16,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: REUSE Compliance Check
-      uses: fsfe/reuse-action@v1
+      uses: fsfe/reuse-action@v1.1.1
       with:
-        args: --root ./addons/gdtemu
+        args: --root ./addons/gdtemu lint
 
   gdformat-check:
     name: 'Check GDScript Format'
@@ -29,28 +33,132 @@ jobs:
         python -m pip install -r requirements.txt
         gdformat -c .
 
-  test:
-    name: Test (${{ matrix.os }} ${{ matrix.version }})
+  build-docker:
+    # Build inside docker container in order to target older GLIBC versions.
+    name: 'Build Docker'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [ release, debug ]
+        bits: [ 64, 32 ]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Get godot-cpp submodule commit hash
+        shell: bash
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        run: |
+          echo ::set-env name=GODOT_CPP_COMMIT_HASH::$(git ls-tree HEAD addons/gdtemu/native/thirdparty/godot-cpp -l | cut -d\  -f3)
+      - name: Cache godot-cpp bindings
+        uses: actions/cache@v3
+        id: godot-cpp-cache
+        with:
+          path: addons/gdtemu/native/thirdparty/godot-cpp
+          key: godot-cpp-docker-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-v${{ env.GODOT_CPP_CACHE_VERSION }}
+      - name: Run docker-compose pull
+        run: |
+          cd addons/gdtemu/native
+          docker-compose pull
+      - name: Build godot-cpp bindings
+        if: steps.godot-cpp-cache.outputs.cache-hit != 'true'
+        run: |
+          cd addons/gdtemu/native/
+          UID_GID="0:0" docker-compose build godot-cpp
+          UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} godot-cpp
+      - name: Build libgdtemu
+        run: |
+          cd addons/gdtemu/native
+          UID_GID="0:0" docker-compose build gdtemu-linux
+          UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} gdtemu-linux
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: libgdtemu-${{ matrix.target }}
+          path: |
+            addons/gdtemu/native/bin/*.so
+
+  build-native:
+    name: 'Build Native'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        version: [ "v3.4.4-stable", "v3.5-beta4" ]
+        platform: [ linux ]
+        target: [ release, debug ]
+        bits: [ 64, 32 ]
+        include:
+          - platform: linux
+            os: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Godot
-        id: setup-godot
-        uses: lihop/setup-godot@v0.1.0
+      - uses: actions/checkout@v2
         with:
-          version: ${{ matrix.version }}
+          submodules: recursive
+      - name: Get godot-cpp submodule commit hash
+        shell: bash
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        run: |
+          echo ::set-env name=GODOT_CPP_COMMIT_HASH::$(git ls-tree HEAD addons/gdtemu/native/thirdparty/godot-cpp -l | cut -d\  -f3)
+      - name: Cache godot-cpp bindings
+        uses: actions/cache@v3
+        id: godot-cpp-cache
+        with:
+          path: addons/gdtemu/native/thirdparty/godot-cpp
+          key: godot-cpp-native-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-v${{ env.GODOT_CPP_CACHE_VERSION }}
+      - name: Install ubuntu build dependencies
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: sudo apt-get update && sudo apt-get install -y scons gcc-multilib g++-multilib
+      - name: Build godot-cpp bindings
+        if: steps.godot-cpp-cache.outputs.cache-hit != 'true'
+        run: |
+          cd addons/gdtemu/native/thirdparty/godot-cpp
+          scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} generate_bindings=yes -j$(nproc)
+      - name: Build libgdtemu
+        run: |
+          cd addons/gdtemu/native
+          scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} -j$(nproc)
+
+  test:
+    name: 'Run Tests'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ linux ]
+        bits: [ 64, 32 ]
+        godot_version: [ 'v3.4.4-stable', 'v3.5-beta5' ]
+        include:
+          - platform: linux
+            os: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Setup Godot
+        uses: lihop/setup-godot@v0.1.1
+        with:
+          version: ${{ matrix.godot_version }}
+          bits: ${{ matrix.bits }}
       - name: Install plugins
-        shell: bash
         run: godot --no-window -s plug.gd install
-      - name: Import files
+      - name: Run unit tests
         shell: bash
-        run: godot --editor --quit
-      - name: Run tests
+        run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_unit.json
+      - name: Wait for build to complete
+        uses: fountainhead/action-wait-for-check@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Build Docker (release, ${{ matrix.bits }}) 
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          intervalSeconds: 3
+      - name: Install binary build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: libgdtemu-release
+          path: addons/gdtemu/native/bin
+      - name: Run integration tests
         shell: bash
-        run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig.json
+        run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_integration.json

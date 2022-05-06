@@ -270,10 +270,6 @@ sources = []
 sources.append('src/vm.cpp')
 sources.append('src/libgdtemu.cpp')
 
-# Compressed initramfs support.
-env.Append(CPPDEFINES=['CONFIG_INITRAMFS=y'])
-env.Append(LINKFLAGS=['-lz'])
-
 env.Append(LINKFLAGS=['-lpthread'])
 
 if env['platform'] == 'linux':
