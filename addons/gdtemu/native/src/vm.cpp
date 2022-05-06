@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <arpa/inet.h>
+#include <pthread.h>
 #include <signal.h>
 #include <sys/time.h>
 
