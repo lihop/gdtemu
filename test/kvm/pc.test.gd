@@ -23,3 +23,22 @@ func test_pc_kernel_only_with_thread():
 	vm.start()
 	yield(yield_to(vm, "console_wrote", 20), YIELD)
 	assert_signal_emitted(vm, "console_wrote")
+
+
+func test_pc_example():
+	var scene := preload("res://examples/pc/pc.tscn").instance()
+	add_child_autoqfree(scene)
+	var vm = scene.get_node("VirtualMachine")
+	var terminal = scene.get_node("_/Terminal")
+	scene.get_node("_/_/PowerButton").pressed = true
+	while not "buildroot login: " in terminal.copy_all():
+		yield(yield_to(vm, "console_wrote", 20), YIELD)
+	vm.console_read("root\n".to_utf8())
+	while not "Password: " in terminal.copy_all():
+		yield(yield_to(vm, "console_wrote", 20), YIELD)
+	vm.console_read("root\n".to_utf8())
+	while not "# " in terminal.copy_all():
+		yield(yield_to(vm, "console_wrote", 20), YIELD)
+	vm.console_read("uname -a\n".to_utf8())
+	yield(yield_to(vm, "console_wrote", 20), YIELD)
+	assert_string_contains(terminal.copy_all(), "x86_64 GNU/Linux")
