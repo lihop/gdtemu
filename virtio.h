@@ -24,7 +24,11 @@
 #ifndef VIRTIO_H
 #define VIRTIO_H
 
+#ifndef __WIN32
 #include <sys/select.h>
+#else
+#include <winsock.h>
+#endif
 
 #include "iomem.h"
 #include "pci.h"

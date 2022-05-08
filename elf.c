@@ -29,6 +29,11 @@
 
 #include "cutils.h"
 
+#ifdef __WIN32
+#include <minmax.h>
+#define MAX max
+#endif
+
 typedef struct __attribute__((packed)) {
     uint8_t magic[4];
     uint8_t class;

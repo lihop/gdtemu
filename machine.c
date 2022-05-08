@@ -148,12 +148,14 @@ static char *cmdline_subst(const char *cmdline)
                 p++;
             if (!strcmp(var_name, "TZ")) {
                 time_t ti;
-                struct tm tm;
+		struct tm tm;
                 int n, sg;
                 /* get the offset to UTC */
                 time(&ti);
                 localtime_r(&ti, &tm);
+#ifndef __WIN32 // MinGW 'struct tm' in time.h does not have a member named 'tm_gmtoff'.
                 n = tm.tm_gmtoff / 60;
+#endif
                 sg = '-';
                 if (n < 0) {
                     sg = '+';
