@@ -12,7 +12,7 @@ config_version=4
 
 config/name="gdtemu"
 config/description="GDNative wrapper around Fabrice Bellard's TinyEMU (https://bellard.org/tinyemu/) system emulator for the RISC-V and x86 architectures."
-run/main_scene="res://examples/pc/pc.tscn"
+run/main_scene="res://examples/main.tscn"
 config/icon="res://icon.png"
 
 [display]
@@ -28,6 +28,17 @@ enabled=PoolStringArray( "res://addons/gdtemu/plugin.cfg", "res://addons/godot_x
 template=false
 FPS=false
 vsync=false
+
+[input]
+
+ui_focus_next={
+"deadzone": 0.5,
+"events": [  ]
+}
+ui_focus_prev={
+"deadzone": 0.5,
+"events": [  ]
+}
 
 [rendering]
 

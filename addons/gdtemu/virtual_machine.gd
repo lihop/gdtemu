@@ -59,6 +59,9 @@ func _ready():
 
 
 func start() -> int:
+	if is_inside_tree():
+		yield(get_tree(), "idle_frame")
+
 	if _state == STATE_RUNNING:
 		return ERR_ALREADY_IN_USE
 

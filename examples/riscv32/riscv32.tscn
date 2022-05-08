@@ -6,6 +6,7 @@
 
 [node name="Console" instance=ExtResource( 3 )]
 autostart = false
+note = "riscv32"
 
 [node name="VirtualMachine" type="Node" parent="." index="1"]
 script = ExtResource( 1 )

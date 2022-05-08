@@ -1,0 +1,49 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://examples/riscv32/riscv32.tscn" type="PackedScene" id=1]
+[ext_resource path="res://examples/main.gd" type="Script" id=2]
+[ext_resource path="res://examples/pc/pc.tscn" type="PackedScene" id=3]
+[ext_resource path="res://examples/riscv64/riscv64.tscn" type="PackedScene" id=4]
+
+[node name="Example" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 2 )
+
+[node name="_" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="_" type="HBoxContainer" parent="_"]
+margin_right = 1024.0
+margin_bottom = 298.0
+size_flags_vertical = 3
+
+[node name="RISCV32" parent="_/_" groups=["console"] instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 510.0
+margin_bottom = 298.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RISCV64" parent="_/_" groups=["console"] instance=ExtResource( 4 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 514.0
+margin_right = 1024.0
+margin_bottom = 298.0
+size_flags_horizontal = 3
+
+[node name="PC" parent="_" groups=["console"] instance=ExtResource( 3 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_top = 302.0
+margin_right = 1024.0
+margin_bottom = 600.0
+size_flags_vertical = 3
+autostart = false
+
+[connection signal="focus_entered" from="_/_/RISCV32" to="." method="_on_Console_focus_entered" binds= [ "RISCV32" ]]
+[connection signal="focus_entered" from="_/_/RISCV64" to="." method="_on_Console_focus_entered" binds= [ "RISCV64" ]]
+[connection signal="focus_entered" from="_/PC" to="." method="_on_Console_focus_entered" binds= [ "PC" ]]
