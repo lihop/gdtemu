@@ -5,6 +5,8 @@
 
 # gdtemu
 
+![Screenshot of example scene showing PC, RISC-V 32, and RISC-V 64 consoles.](/docs/screenshot.png)
+
 ## Buildroot
 
 Buildroot can be used to generate kernels and root filesystems for VMs.
