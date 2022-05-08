@@ -34,12 +34,12 @@ jobs:
         gdformat -c .
 
   build-docker:
-    # Build inside docker container in order to target older GLIBC versions.
-    name: 'Build Docker (${{ matrix.target }}, ${{ matrix.bits }}) #${{ github.run_number }}'
+    name: 'Build Docker (${{ matrix.platform }}, ${{ matrix.target }}, ${{ matrix.bits }}) #${{ github.run_number }}'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        platform: [ windows, linux ]
         target: [ release, debug ]
         bits: [ 64, 32 ]
     steps:
@@ -57,22 +57,17 @@ jobs:
         id: godot-cpp-cache
         with:
           path: addons/gdtemu/native/thirdparty/godot-cpp
-          key: godot-cpp-docker-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-v${{ env.GODOT_CPP_CACHE_VERSION }}
-      - name: Run docker-compose pull
-        run: |
-          cd addons/gdtemu/native
-          docker-compose pull
+          key: godot-cpp-docker-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-v${{ env.GODOT_CPP_CACHE_VERSION }}
+      - run: docker-compose pull
+        working-directory: addons/gdtemu/native
       - name: Build godot-cpp bindings
         if: steps.godot-cpp-cache.outputs.cache-hit != 'true'
-        run: |
-          cd addons/gdtemu/native/
-          UID_GID="0:0" docker-compose build godot-cpp
-          UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} godot-cpp
+        working-directory: addons/gdtemu/native
+        run: UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} godot-cpp-${{ matrix.platform }}
       - name: Build libgdtemu
-        run: |
-          cd addons/gdtemu/native
-          UID_GID="0:0" docker-compose build gdtemu-linux
-          UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} gdtemu-linux
+        if: ${{ matrix.platform != 'windows' }} # Windows build not yet supported.
+        working-directory: addons/gdtemu/native
+        run: UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} gdtemu-${{ matrix.platform }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -151,7 +146,7 @@ jobs:
         uses: fountainhead/action-wait-for-check@v1.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'Build Docker (release, ${{ matrix.bits }}) #${{ github.run_number }}'
+          checkName: 'Build Docker (${{ matrix.platform }}, release, ${{ matrix.bits }}) #${{ github.run_number }}'
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           intervalSeconds: 3
       - name: Install binary build artifacts
