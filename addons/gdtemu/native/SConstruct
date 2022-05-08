@@ -6,7 +6,7 @@ import os
 import sys
 import subprocess
 
-# Try to detect the host platform automatically. 
+# Try to detect the host platform automatically.
 # This is used if no `platform` argument is passed.
 if sys.platform.startswith('linux'):
     host_platform = 'linux'
@@ -20,7 +20,7 @@ else:
         'platform=<platform>'
     )
 
-env = Environment(ENV = os.environ)
+env = Environment(ENV=os.environ)
 
 is64 = sys.maxsize > 2**32
 if (
@@ -62,7 +62,7 @@ opts.Add(BoolVariable(
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
 
-# Allows 32bit builds on windows 64bit. 
+# Allows 32bit builds on windows 64bit.
 if env['platform'] == 'windows':
     if env['bits'] == '64':
         env = Environment(TARGET_ARCH='amd64')
@@ -195,18 +195,18 @@ env.Append(CPPDEFINES=['-DCONFIG_SLIRP=y'])
 if env['platform'] == 'linux':
     env.Append(CPPDEFINES=['-DCONFIG_X86EMU=y'])
 
-env32 = env.Clone() 
+env32 = env.Clone()
 env32.Append(CPPDEFINES=['-DMAX_XLEN=32'])
 Default(env32.StaticObject(
-    target = 'thirdparty/TinyEMU/riscv_cpu32.o',
-    source = 'thirdparty/TinyEMU/riscv_cpu.c',
+    target='thirdparty/TinyEMU/riscv_cpu32.o',
+    source='thirdparty/TinyEMU/riscv_cpu.c',
 ))
 
 env64 = env.Clone()
 env64.Append(CPPDEFINES=['-DMAX_XLEN=64'])
 Default(env64.StaticObject(
-    target = 'thirdparty/TinyEMU/riscv_cpu64.o',
-    source = 'thirdparty/TinyEMU/riscv_cpu.c',
+    target='thirdparty/TinyEMU/riscv_cpu64.o',
+    source='thirdparty/TinyEMU/riscv_cpu.c',
 ))
 
 env.Append(CPPPATH=[
@@ -262,7 +262,8 @@ env.Append(LIBS=[
         'wasm' if env['platform'] == 'javascript' else env['bits'],
         env['LIBSUFFIX'],
     )),
-    env.File('thirdparty/TinyEMU/libtemu.a'), # FIXME: Add platform, bits, etc.
+    # FIXME: Add platform, bits, etc.
+    env.File('thirdparty/TinyEMU/libtemu.a'),
 ])
 
 sources = []
