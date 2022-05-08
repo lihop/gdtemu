@@ -3,12 +3,19 @@
 // SPDX-FileCopyrightText: 2016-2018 Fabrice Bellard
 // SPDX-License-Identifier: MIT
 
-#include <arpa/inet.h>
+#ifndef __WIN32
 #include <pthread.h>
 #include <signal.h>
 #include <sys/time.h>
+#endif
 
 #include <OS.hpp>
+
+#ifndef __WIN32
+#include <arpa/inet.h>
+#else
+#include <winsock2.h>
+#endif
 
 #include "vm.h"
 
@@ -31,6 +38,7 @@ void VM::_register_methods() {
   register_method("console_resize", &VM::console_resize);
 }
 
+#ifndef __WIN32
 std::set<pthread_t> VM::threads = {};
 pthread_t VM::main_thread = pthread_self();
 
@@ -48,6 +56,7 @@ static void on_alarm(int sig) {
     pthread_kill(thread, sig);
   }
 }
+#endif
 
 static int load_file(uint8_t **pbuf, String filename) {
   File *file = File::_new();
@@ -73,6 +82,7 @@ static int load_file(uint8_t **pbuf, String filename) {
   return len;
 }
 
+#ifndef __WIN32
 static EthernetDevice *slirp_open(void *opaque) {
   VM *vm = static_cast<VM *>(opaque);
 
@@ -104,6 +114,7 @@ static EthernetDevice *slirp_open(void *opaque) {
 
   return net;
 }
+#endif
 
 VM::VM() {}
 VM::~VM() {}
@@ -315,6 +326,7 @@ godot_error VM::start(Resource *config) {
     params->tab_drive[i].block_dev = drive;
   }
 
+#ifndef __WIN32
   Array net_devices = config->get("net_devices");
   params->eth_count = net_devices.size();
   for (int i = 0; i < net_devices.size(); i++) {
@@ -347,6 +359,7 @@ godot_error VM::start(Resource *config) {
       break;
     }
   }
+#endif
 
   params->rtc_real_time = TRUE;
 
@@ -405,6 +418,7 @@ static void *thread_func(void *opaque) {
 
 int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
                    int max_exec_cycles = MAX_EXEC_CYCLES) {
+#ifndef __WIN32
   if (thread_running) {
     return GODOT_ERR_ALREADY_IN_USE;
   }
@@ -427,11 +441,13 @@ int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
   sigemptyset(&act.sa_mask);
   act.sa_flags = SA_SIGINFO;
   sigaction(SIGALRM, &act, NULL);
+#endif
 
   return GODOT_OK;
 }
 
 void VM::stop_thread() {
+#ifndef __WIN32
   if (!thread_running) {
     return;
   }
@@ -440,6 +456,7 @@ void VM::stop_thread() {
   void *_ret;
   pthread_join(thread, &_ret);
   VM::threads.erase(thread);
+#endif
 }
 
 void VM::stop() {

@@ -56,8 +56,8 @@ updateSubmodules TINYEMU_DIR ${NATIVE_DIR}/thirdparty/TinyEMU
 
 # Build godot-cpp bindings.
 cd ${GODOT_CPP_DIR}
-scons generate_bindings=yes target=$target bits=$bits -j$nproc
+scons use_mingw=yes generate_bindings=yes target=$target bits=$bits -j$nproc
 
 # Build libgdtemu.
 cd ${NATIVE_DIR}
-scons target=$target bits=$bits -j$nproc
+scons use_mingw=yes target=$target bits=$bits -j$nproc

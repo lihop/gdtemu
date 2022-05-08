@@ -29,7 +29,7 @@ enum Priority {
 
 export(Resource) var config = null setget set_config
 export(bool) var autostart := false
-export(bool) var use_threads := true
+export(bool) var use_threads := false setget set_use_threads
 export(int) var max_sleep_time_ms := 10
 export(int) var max_exec_cycles := 5000000
 
@@ -39,6 +39,14 @@ var _native_vm: NativeVM
 var _state := STATE_IDLE
 var _console_buffer := PoolByteArray()
 var _buffer_dirty := false
+
+
+func set_use_threads(value: bool) -> void:
+	if OS.get_name() == "Server" or OS.get_name() == "X11":
+		use_threads = value
+	else:
+		push_error("Use threads not supported on this platform.")
+		use_threads = false
 
 
 func set_config(value: VirtualMachineConfig) -> void:

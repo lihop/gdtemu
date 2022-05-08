@@ -53,11 +53,8 @@ opts.Add(EnumVariable(
     allowed_values=('debug', 'release'),
     ignorecase=2
 ))
-opts.Add(BoolVariable(
-    'disable_pty',
-    'Disables the PTY and its dependencies (LibuvUtils and Pipe). Has no effect on platforms where PTY is not supported',
-    False
-))
+opts.Add(BoolVariable("use_mingw",
+         "Use the MinGW compiler instead of MSVC - only effective on Windows", False))
 
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
@@ -130,7 +127,7 @@ elif env['platform'] == 'osx':
 
     if env['bits'] == '32':
         raise ValueError(
-            'Only 64-bit builds are supported for the macOS target.'
+            'Only 64-bit builds are supported for the osx platform.'
         )
 
     env.Append(CCFLAGS=['-arch', 'x86_64'])
@@ -151,27 +148,27 @@ elif env['platform'] == 'windows':
     env.Append(CPPDEFINES=['__WIN32'])
     env['LIBSUFFIX'] = '.lib'
 
-    # On Windows using MSVC.
+    # On Windows.
     if host_platform == 'windows':
-        if env['target'] == 'debug':
-            env.Append(CCFLAGS=['/Z7', '/Od', '/EHsc', '/D_DEBUG', '/MDd'])
-        elif env['target'] == 'release':
-            env.Append(CCFLAGS=['/O2', '/EHsc', '/DNDEBUG', '/MD'])
+        raise ValueError(
+            'Compiling for windows on Windows is not currently supported. Please cross-compile for windows on Linux or inside a Linux Docker container.'
+        )
 
-    # On Windows, Linux, or MacOS using MinGW.
+    # Cross-compilation on Linux or MacOS using MinGW.
     elif host_platform == 'linux' or host_platform == 'osx':
-        env.Append(CCFLAGS=['-std=c++14', '-Wwrite-strings'])
+        # This allows MinGW's time.h to expose localtime_r() which is used by TinyEMU's machine.c.
+        env.Append(CPPDEFINES=['_POSIX_THREAD_SAFE_FUNCTIONS'])
+        # Ditto but for clock_gettime() used by TinyEMU's riscv_machine.c.
+        env.Append(CPPDEFINES=['_POSIX_C_SOURCE=200809L', '__EXTENSIONS__'])
+
+        # These options are for a release build even using target=debug.
+        env.Append(CCFLAGS=['-O3', '-Wwrite-strings'])
         env.Append(LINKFLAGS=[
             '--static',
             '-Wl,--no-undefined',
             '-static-libgcc',
             '-static-libstdc++',
         ])
-
-        if env['target'] == 'debug':
-            env.Append(CCFLAGS=['-Og', '-g'])
-        elif env['target'] == 'release':
-            env.Append(CCFLAGS=['-O3'])
 
         if env['bits'] == '64':
             env['CC'] = 'x86_64-w64-mingw32-gcc'
@@ -188,22 +185,21 @@ elif env['platform'] == 'windows':
 
 
 # Build TinyEMU as a static library.
-env.Append(CPPDEFINES=['-DCONFIG_VERSION=\\"2019-02-10\\"'])
-env.Append(CPPDEFINES=['-DCONFIG_RISCV_MAX_XLEN=64'])
-env.Append(CPPDEFINES=['-DCONFIG_SLIRP=y'])
+env.Append(CPPDEFINES=['CONFIG_VERSION=\\"2019-02-10\\"'])
+env.Append(CPPDEFINES=['CONFIG_RISCV_MAX_XLEN=64'])
 
 if env['platform'] == 'linux':
-    env.Append(CPPDEFINES=['-DCONFIG_X86EMU=y'])
+    env.Append(CPPDEFINES=['CONFIG_X86EMU=y'])
 
 env32 = env.Clone()
-env32.Append(CPPDEFINES=['-DMAX_XLEN=32'])
+env32.Append(CPPDEFINES=['MAX_XLEN=32'])
 Default(env32.StaticObject(
     target='thirdparty/TinyEMU/riscv_cpu32.o',
     source='thirdparty/TinyEMU/riscv_cpu.c',
 ))
 
 env64 = env.Clone()
-env64.Append(CPPDEFINES=['-DMAX_XLEN=64'])
+env64.Append(CPPDEFINES=['MAX_XLEN=64'])
 Default(env64.StaticObject(
     target='thirdparty/TinyEMU/riscv_cpu64.o',
     source='thirdparty/TinyEMU/riscv_cpu.c',
@@ -215,15 +211,21 @@ env.Append(CPPPATH=[
 ])
 
 sources = []
+
 sources.append(['thirdparty/TinyEMU/' + f for f in [
     'virtio.c', 'pci.c', 'fs.c', 'cutils.c', 'iomem.c', 'simplefb.c', 'json.c', 'machine.c', 'elf.c',
 ]])
-sources.append(['thirdparty/TinyEMU/slirp/' + f for f in [
-    'bootp.c', 'ip_icmp.c', 'mbuf.c', 'slirp.c', 'tcp_output.c', 'cksum.c', 'ip_input.c', 'misc.c',
-    'socket.c', 'tcp_subr.c', 'udp.c', 'if.c', 'ip_output.c', 'sbuf.c', 'tcp_input.c', 'tcp_timer.c',
-]])
+
+if env['platform'] != 'windows':
+    env.Append(CPPDEFINES=['CONFIG_SLIRP=y'])
+    sources.append(['thirdparty/TinyEMU/slirp/' + f for f in [
+        'bootp.c', 'ip_icmp.c', 'mbuf.c', 'slirp.c', 'tcp_output.c', 'cksum.c', 'ip_input.c', 'misc.c',
+        'socket.c', 'tcp_subr.c', 'udp.c', 'if.c', 'ip_output.c', 'sbuf.c', 'tcp_input.c', 'tcp_timer.c',
+    ]])
+    sources.append(['thirdparty/TinyEMU/fs_disk.c'])
+
 sources.append(['thirdparty/TinyEMU/' + f for f in [
-    'fs_disk.c', 'riscv_machine.c', 'softfp.c',
+    'riscv_machine.c', 'softfp.c',
     'riscv_cpu32.o',
     'riscv_cpu64.o',
     'x86_cpu.c', 'x86_machine.c', 'ide.c', 'ps2.c', 'vmmouse.c', 'pckbd.c', 'vga.c',
@@ -238,8 +240,7 @@ Default(libtemu)
 
 
 # Build libgdtemu.
-if env['platform'] != 'windows':
-    env.Append(CXXFLAGS=['-std=c++14'])
+env.Append(CXXFLAGS=['-std=c++14'])
 
 env.Append(CPPPATH=[
     'thirdparty/TinyEMU/',
@@ -260,18 +261,20 @@ env.Append(LIBS=[
         env['platform'],
         env['target'],
         'wasm' if env['platform'] == 'javascript' else env['bits'],
-        env['LIBSUFFIX'],
+        '.a' if env['platform'] == 'windows' else env['LIBSUFFIX'],
     )),
     # FIXME: Add platform, bits, etc.
     env.File('thirdparty/TinyEMU/libtemu.a'),
+    '-lpthread',
 ])
+
+if env['platform'] == 'windows':
+    env.Append(LIBS=['-lwsock32'])
 
 sources = []
 
 sources.append('src/vm.cpp')
 sources.append('src/libgdtemu.cpp')
-
-env.Append(LINKFLAGS=['-lpthread'])
 
 if env['platform'] == 'linux':
     libsuffix = "a"
