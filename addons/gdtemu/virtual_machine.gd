@@ -42,7 +42,7 @@ var _buffer_dirty := false
 
 
 func set_use_threads(value: bool) -> void:
-	if OS.get_name() == "Server" or OS.get_name() == "X11":
+	if OS.get_name() in ["X11", "Server", "OSX"]:
 		use_threads = value
 	else:
 		push_error("Use threads not supported on this platform.")

@@ -1,6 +1,9 @@
 # GitHub Actions does not support KVM so keep these tests in a separate directory.
 extends "../integration/test_base.gd"
 
+# GitHub Actions runners don't support KVM.
+var ci := OS.get_environment("GITHUB_ACTIONS") == "true"
+
 
 static func setup_vm(vm, use_threads := false) -> void:
 	.setup_vm(vm, use_threads)
@@ -10,6 +13,8 @@ static func setup_vm(vm, use_threads := false) -> void:
 
 
 func test_pc_kernel_only_no_thread():
+	if ci:
+		return
 	setup_vm(vm, false)
 	add_child_autofree(vm)
 	vm.start()
@@ -18,6 +23,8 @@ func test_pc_kernel_only_no_thread():
 
 
 func test_pc_kernel_only_with_thread():
+	if ci:
+		return
 	setup_vm(vm, true)
 	add_child_autofree(vm)
 	vm.start()
@@ -26,6 +33,8 @@ func test_pc_kernel_only_with_thread():
 
 
 func test_pc_example():
+	if ci:
+		return
 	var scene := preload("res://examples/pc/pc.tscn").instance()
 	add_child_autoqfree(scene)
 	var vm = scene.get_node("VirtualMachine")

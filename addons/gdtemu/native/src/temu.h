@@ -21,7 +21,3 @@ void slirp_select_fill1(EthernetDevice *net, int *pfd_max, fd_set *rfds,
 void slirp_select_poll1(EthernetDevice *net, fd_set *rfds, fd_set *wfds,
                         fd_set *efds, int select_ret);
 EthernetDevice *slirp_open(void);
-
-void virt_machine_run(VirtMachine *m);
-
-CharacterDevice *console_init(BOOL allow_ctrlc);

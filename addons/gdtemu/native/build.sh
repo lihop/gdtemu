@@ -29,7 +29,7 @@ done
 # Set defaults.
 target=${target:-debug}
 bits=${bits:-64}
-nproc=$(nproc || sysctl -n hw.ncpu)
+nproc=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 
 # Get the absolute path to the directory this script is in.
 NATIVE_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
@@ -56,8 +56,8 @@ updateSubmodules TINYEMU_DIR ${NATIVE_DIR}/thirdparty/TinyEMU
 
 # Build godot-cpp bindings.
 cd ${GODOT_CPP_DIR}
-scons use_mingw=yes generate_bindings=yes target=$target bits=$bits -j$nproc
+scons use_mingw=yes macos_arch=$(uname -m) generate_bindings=yes target=$target bits=$bits -j$nproc
 
 # Build libgdtemu.
 cd ${NATIVE_DIR}
-scons use_mingw=yes target=$target bits=$bits -j$nproc
+scons use_mingw=yes macos_arch=$(uname -m) target=$target bits=$bits -j$nproc

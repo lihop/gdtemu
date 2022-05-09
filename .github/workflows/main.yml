@@ -78,17 +78,22 @@ jobs:
             addons/gdtemu/native/bin/*.dll
 
   build-native:
-    name: 'Build Native'
+    name: 'Build Native (${{ matrix.platform }}, ${{ matrix.target }}, ${{ matrix.bits }}) #${{ github.run_number }}'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        platform: [ linux ]
+        platform: [ linux, osx ]
         target: [ release, debug ]
         bits: [ 64, 32 ]
         include:
           - platform: linux
             os: ubuntu-latest
+          - platform: osx
+            os: macos-latest
+        exclude:
+          - platform: osx
+            bits: 32
     steps:
       - uses: actions/checkout@v2
         with:
@@ -108,15 +113,32 @@ jobs:
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         name: Install ubuntu build dependencies
         run: sudo apt-get update && sudo apt-get install -y scons gcc-multilib g++-multilib
+      - if: ${{ matrix.os == 'macos-latest' }}
+        name: Install macos build dependencies
+        run: brew install scons
       - name: Build godot-cpp bindings
         if: steps.godot-cpp-cache.outputs.cache-hit != 'true'
         run: |
           cd addons/gdtemu/native/thirdparty/godot-cpp
-          scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} generate_bindings=yes -j$(nproc)
+          scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} generate_bindings=yes -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      - name: Delete VERSION file
+        if: ${{ matrix.os == 'macos-latest' }}
+        # This file causes an error when compiling on macOS as somewhere along the way the cstddef file
+        # is included which contains '#include<version>'. With the macOS filesystem being case insensitive,
+        # the compiler thinks that this file (in the include path) we want. It isn't and it doesn't contain
+        # valid c/c++ code, thus causing an error once included.
+        working-directory: addons/gdtemu/native/thirdparty/TinyEMU
+        run: rm VERSION
       - name: Build libgdtemu
-        run: |
-          cd addons/gdtemu/native
-          scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} -j$(nproc)
+        working-directory: addons/gdtemu/native
+        run: scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      - name: Upload build artifacts
+        if: ${{ matrix.platform == 'osx' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: libgdtemu-${{ matrix.target }}
+          path: |
+            addons/gdtemu/native/bin/*.dylib
 
   test:
     name: 'Run Tests'
@@ -124,14 +146,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ linux, windows ]
+        platform: [ linux, osx, windows ]
         bits: [ 64, 32 ]
         godot_version: [ 'v3.4.4-stable', 'v3.5-beta5' ]
         include:
           - platform: linux
             os: ubuntu-latest
+          - platform: osx
+            os: macos-latest
           - platform: windows
             os: windows-latest
+        exclude:
+          - platform: osx
+            bits: 32
     steps:
       - uses: actions/checkout@v2
         with:
@@ -141,24 +168,37 @@ jobs:
         with:
           version: ${{ matrix.godot_version }}
           bits: ${{ matrix.bits }}
+      - name: Cache plugins
+        id: cache-plugins
+        uses: actions/cache@v3
+        with:
+          path: |
+            addons
+            !addons/gdtemu
+          key: ${{ hashFiles('**/plug.gd') }}
       - name: Install plugins
+        if: steps.cache-plugins.outputs.cache-hit != 'true'
         shell: bash
         run: godot --no-window -s plug.gd install
-      - name: Wait for build to complete
+      - name: Wait for ${{ matrix.platform }} docker build to complete
+        if: ${{ matrix.os != 'macos-latest' }}
         uses: fountainhead/action-wait-for-check@v1.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkName: 'Build Docker (${{ matrix.platform }}, release, ${{ matrix.bits }}) #${{ github.run_number }}'
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          intervalSeconds: 3
+      - name: Wait for ${{ matrix.platform }} native build to complete
+        if: ${{ matrix.os == 'macos-latest' }}
+        uses: fountainhead/action-wait-for-check@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: 'Build Native (osx, release, 64) #${{ github.run_number }}'
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install binary build artifacts
         uses: actions/download-artifact@v2
         with:
           name: libgdtemu-release
           path: addons/gdtemu/native/bin
-      - name: Import resources
-        shell: bash
-        run: godot --editor --quit
       - name: Run unit and integration tests
         shell: bash
         run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json

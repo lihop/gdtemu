@@ -55,6 +55,8 @@ opts.Add(EnumVariable(
 ))
 opts.Add(BoolVariable("use_mingw",
          "Use the MinGW compiler instead of MSVC - only effective on Windows", False))
+opts.Add(EnumVariable("macos_arch", "Target macOS architecture",
+         "universal", ["universal", "x86_64", "arm64"]))
 
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
@@ -130,12 +132,14 @@ elif env['platform'] == 'osx':
             'Only 64-bit builds are supported for the osx platform.'
         )
 
-    env.Append(CCFLAGS=['-arch', 'x86_64'])
-    env.Append(LINKFLAGS=[
-        '-arch',
-        'x86_64',
-        '-Wl,-undefined,dynamic_lookup',
-    ])
+    if env["macos_arch"] == "universal":
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-arch", "arm64"])
+        env.Append(CCFLAGS=["-arch", "x86_64", "-arch", "arm64"])
+    else:
+        env.Append(LINKFLAGS=["-arch", env["macos_arch"]])
+        env.Append(CCFLAGS=["-arch", env["macos_arch"]])
+
+    env.Append(LINKFLAGS=['-Wl,-undefined,dynamic_lookup'])
 
     if env['target'] == 'debug':
         env.Append(CCFLAGS=['-Og', '-g'])
@@ -185,7 +189,6 @@ elif env['platform'] == 'windows':
 
 
 # Build TinyEMU as a static library.
-env.Append(CPPDEFINES=['CONFIG_VERSION=\\"2019-02-10\\"'])
 env.Append(CPPDEFINES=['CONFIG_RISCV_MAX_XLEN=64'])
 
 if env['platform'] == 'linux':
@@ -229,7 +232,6 @@ sources.append(['thirdparty/TinyEMU/' + f for f in [
     'riscv_cpu32.o',
     'riscv_cpu64.o',
     'x86_cpu.c', 'x86_machine.c', 'ide.c', 'ps2.c', 'vmmouse.c', 'pckbd.c', 'vga.c',
-    'temu.c',
 ]])
 
 libtemu = env.StaticLibrary(
@@ -260,7 +262,8 @@ env.Append(LIBS=[
     env.File('thirdparty/godot-cpp/bin/libgodot-cpp.{}.{}.{}{}'.format(
         env['platform'],
         env['target'],
-        'wasm' if env['platform'] == 'javascript' else env['bits'],
+        'wasm' if env['platform'] == 'javascript' else env['macos_arch'] if (
+            env['macos_arch'] != 'universal' and env['platform'] == 'osx') else env['bits'],
         '.a' if env['platform'] == 'windows' else env['LIBSUFFIX'],
     )),
     # FIXME: Add platform, bits, etc.
@@ -273,6 +276,7 @@ if env['platform'] == 'windows':
 
 sources = []
 
+sources.append('src/temu.c')
 sources.append('src/vm.cpp')
 sources.append('src/libgdtemu.cpp')
 
