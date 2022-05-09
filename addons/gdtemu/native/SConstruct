@@ -260,7 +260,7 @@ env.Append(LIBS=[
     env.File('thirdparty/godot-cpp/bin/libgodot-cpp.{}.{}.{}{}'.format(
         env['platform'],
         env['target'],
-        'wasm' if env['platform'] == 'javascript' else env['bits'],
+        'wasm' if env['platform'] == 'javascript' else 'x86_64' if env['platform'] == 'osx' else env['bits'],
         '.a' if env['platform'] == 'windows' else env['LIBSUFFIX'],
     )),
     # FIXME: Add platform, bits, etc.

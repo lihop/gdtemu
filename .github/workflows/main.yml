@@ -83,12 +83,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ linux ]
+        platform: [ linux, osx ]
         target: [ release, debug ]
         bits: [ 64, 32 ]
         include:
           - platform: linux
             os: ubuntu-latest
+          - platform: osx
+            os: macos-latest
+        exclude:
+          - platform: osx
+            bits: 32
     steps:
       - uses: actions/checkout@v2
         with:
@@ -108,6 +113,9 @@ jobs:
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         name: Install ubuntu build dependencies
         run: sudo apt-get update && sudo apt-get install -y scons gcc-multilib g++-multilib
+      - if: ${{ matrix.os == 'macos-latest' }}
+        name: Install macos build dependencies
+        run: brew install scons
       - name: Build godot-cpp bindings
         if: steps.godot-cpp-cache.outputs.cache-hit != 'true'
         run: |
@@ -117,6 +125,12 @@ jobs:
         run: |
           cd addons/gdtemu/native
           scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} -j$(nproc)
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: libgdtemu-${{ matrix.target }}
+          path: |
+            addons/gdtemu/native/bin/*.dylib
 
   test:
     name: 'Run Tests'
@@ -124,14 +138,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ linux, windows ]
+        platform: [ linux, osx, windows ]
         bits: [ 64, 32 ]
         godot_version: [ 'v3.4.4-stable', 'v3.5-beta5' ]
         include:
           - platform: linux
             os: ubuntu-latest
+          - platform: osx
+            os: macos-latest
           - platform: windows
             os: windows-latest
+        exclude:
+          - platform: osx
+            bits: 32
     steps:
       - uses: actions/checkout@v2
         with:

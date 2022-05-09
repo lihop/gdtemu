@@ -15,8 +15,9 @@ func _ready():
 		$_/PC/VirtualMachine.use_threads = true
 		$_/PC/_/_/PowerButton.pressed = true
 
-	$_/_/RISCV32/VirtualMachine.use_threads = true
-	$_/_/RISCV64/VirtualMachine.use_threads = true
+	if OS.get_name() != "Windows":
+		$_/_/RISCV32/VirtualMachine.use_threads = true
+		$_/_/RISCV64/VirtualMachine.use_threads = true
 
 	$_/_/RISCV32/_/_/PowerButton.pressed = true
 	$_/_/RISCV64/_/_/PowerButton.pressed = true
