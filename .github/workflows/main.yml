@@ -6,8 +6,8 @@ on:
     - cron: 7 1 * * fri
 
 env:
-  # Manually invalidate cache by incrementing this number.
-  GODOT_CPP_CACHE_VERSION: 1
+  TARGET_GODOT_VERSION: v3.4.4-stable
+  GODOT_CPP_CACHE_VERSION: 1 # Manually invalidate cache by incrementing this number.
 
 jobs:
   reuse-compliance-check:
@@ -202,3 +202,65 @@ jobs:
       - name: Run unit and integration tests
         shell: bash
         run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json
+
+  export-demo:
+    name: 'Export Demo'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ linux, osx, windows ]
+        bits: [ 64, 32 ]
+        exclude:
+          - platform: osx
+            bits: 32
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Setup Godot
+        uses: lihop/setup-godot@v1.0.0
+        with:
+          version: ${{ env.TARGET_GODOT_VERSION }} 
+          export-templates: true
+      - name: Cache plugins
+        id: cache-plugins
+        uses: actions/cache@v3
+        with:
+          path: |
+            addons
+            !addons/gdtemu
+          key: ${{ hashFiles('**/plug.gd') }}
+      - name: Install plugins
+        if: steps.cache-plugins.outputs.cache-hit != 'true'
+        shell: bash
+        run: godot --no-window -s plug.gd install
+      - name: Wait for ${{ matrix.platform }} docker build to complete
+        if: ${{ matrix.platform != 'osx' }}
+        uses: fountainhead/action-wait-for-check@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: 'Build Docker (${{ matrix.platform }}, release, ${{ matrix.bits }}) #${{ github.run_number }}'
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Wait for ${{ matrix.platform }} native build to complete
+        if: ${{ matrix.platform == 'osx' }}
+        uses: fountainhead/action-wait-for-check@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: 'Build Native (osx, release, 64) #${{ github.run_number }}'
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install binary build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: libgdtemu-release
+          path: addons/gdtemu/native/bin
+      - name: Export demo
+        shell: bash
+        run: godot --no-window --export ${{ matrix.platform }}.${{ matrix.bits}}
+      - name: Upload demo
+        uses: actions/upload-artifact@v2
+        with:
+          name: gdtemu-demo.${{ matrix.platform }}.${{ matrix.bits }}
+          path: |
+            export/${{ matrix.platform }}.${{ matrix.bits }}
+            !export/**/.gitkeep
