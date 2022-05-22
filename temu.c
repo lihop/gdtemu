@@ -35,11 +35,16 @@
 #ifndef _WIN32
 #include <termios.h>
 #include <sys/ioctl.h>
+#endif
+#if !defined(_WIN32) && !defined(__APPLE__)
 #include <net/if.h>
 #include <linux/if_tun.h>
 #endif
 #include <sys/stat.h>
 #include <signal.h>
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
 
 #include "cutils.h"
 #include "iomem.h"
@@ -158,6 +163,9 @@ static void term_resize_handler(int sig)
         global_stdio_device->resize_pending = TRUE;
 }
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+extern void console_get_size(void *opaque, int *pw, int *ph);
+#else
 static void console_get_size(STDIODevice *s, int *pw, int *ph)
 {
     struct winsize ws;
@@ -173,6 +181,7 @@ static void console_get_size(STDIODevice *s, int *pw, int *ph)
     *pw = width;
     *ph = height;
 }
+#endif
 
 CharacterDevice *console_init(BOOL allow_ctrlc)
 {
@@ -346,7 +355,7 @@ static BlockDevice *block_device_init(const char *filename,
     return bs;
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 
 typedef struct {
     int fd;
@@ -450,7 +459,7 @@ static EthernetDevice *tun_open(const char *ifname)
     return net;
 }
 
-#endif /* !_WIN32 */
+#endif /* !_WIN32 && !__APPLE__ */
 
 #ifdef CONFIG_SLIRP
 
@@ -615,7 +624,7 @@ static struct option options[] = {
 void help(void)
 {
     printf("temu version " CONFIG_VERSION ", Copyright (c) 2016-2018 Fabrice Bellard\n"
-           "usage: riscvemu [options] config_file\n"
+           "usage: temu [options] config_file\n"
            "options are:\n"
            "-m ram_size       set the RAM size in MB\n"
            "-rw               allow write access to the disk image (default=snapshot)\n"
@@ -644,7 +653,11 @@ static BOOL net_poll_cb(void *arg)
 
 #endif
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+int temu_main(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
     VirtMachine *s;
     const char *path, *cmdline, *build_preload_file;
@@ -788,7 +801,7 @@ int main(int argc, char **argv)
                 exit(1);
         } else
 #endif
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
         if (!strcmp(p->tab_eth[i].driver, "tap")) {
             p->tab_eth[i].net = tun_open(p->tab_eth[i].ifname);
             if (!p->tab_eth[i].net)
@@ -805,6 +818,7 @@ int main(int argc, char **argv)
 #ifdef CONFIG_SDL
     if (p->display_device) {
         sdl_init(p->width, p->height);
+        p->console = console_init(TRUE);
     } else
 #endif
     {
