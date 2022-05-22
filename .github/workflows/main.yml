@@ -144,9 +144,6 @@ jobs:
       - name: Install plugins
         shell: bash
         run: godot --no-window -s plug.gd install
-      - name: Run unit tests
-        shell: bash
-        run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_unit.json
       - name: Wait for build to complete
         uses: fountainhead/action-wait-for-check@v1.0.0
         with:
@@ -162,6 +159,6 @@ jobs:
       - name: Import resources
         shell: bash
         run: godot --editor --quit
-      - name: Run integration tests
+      - name: Run unit and integration tests
         shell: bash
-        run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_integration.json
+        run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json
