@@ -5,7 +5,6 @@
 [ext_resource path="res://examples/console.tscn" type="PackedScene" id=3]
 
 [node name="Console" instance=ExtResource( 3 )]
-autostart = false
 note = "riscv64"
 
 [node name="VirtualMachine" type="Node" parent="." index="1"]
