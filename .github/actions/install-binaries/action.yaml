@@ -1,0 +1,53 @@
+name: Install binaries
+description: Install binary build artifacts including the libgdtemu gdnative libraries and example images
+inputs:
+  platform:
+    required: true
+  bits:
+    default: '64'
+  GITHUB_TOKEN:
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Wait for ${{ inputs.platform }} docker build to complete
+      if: ${{ inputs.platform != 'osx' }}
+      uses: fountainhead/action-wait-for-check@v1.0.0
+      with:
+        token: ${{ inputs.GITHUB_TOKEN }}
+        checkName: 'Build Docker (${{ inputs.platform }}, release, ${{ inputs.bits }}) #${{ github.run_number }}'
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+    - name: Wait for ${{ inputs.platform }} native build to complete
+      if: ${{ inputs.platform == 'osx' }}
+      uses: fountainhead/action-wait-for-check@v1.0.0
+      with:
+        token: ${{ inputs.GITHUB_TOKEN }}
+        checkName: 'Build Native (osx, release, 64) #${{ github.run_number }}'
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+    - name: Install libgdtemu gdnative binaries
+      uses: actions/download-artifact@v2
+      with:
+        name: libgdtemu-release
+        path: addons/gdtemu/native/bin
+    - name: Wait for buildroot riscv64 to complete
+      uses: fountainhead/action-wait-for-check@v1.0.0
+      with:
+        token: ${{ inputs.GITHUB_TOKEN }}
+        checkName: 'Buildroot (riscv64) #${{ github.run_number }}'
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+    - name: Download riscv64 example images
+      uses: actions/download-artifact@v2
+      with:
+        name: example-images-riscv64
+        path: examples/riscv64/buildroot/images
+    - name: Wait for buildroot pc to complete
+      uses: fountainhead/action-wait-for-check@v1.0.0
+      with:
+        token: ${{ inputs.GITHUB_TOKEN }}
+        checkName: 'Buildroot (pc) #${{ github.run_number }}'
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+    - name: Download pc example images
+      uses: actions/download-artifact@v2
+      with:
+        name: example-images-pc
+        path: examples/pc/buildroot/images

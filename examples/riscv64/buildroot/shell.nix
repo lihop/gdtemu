@@ -1,0 +1,18 @@
+{ pkgs ? import <nixpkgs> {} }:
+
+(pkgs.buildFHSUserEnv {
+  name = "buildroot-env";
+  targetPkgs = pkgs: (with pkgs; [
+    bc
+    cpio
+    file
+    flock
+    gcc
+    ncurses.dev
+    perl
+    rsync
+    unzip
+    wget
+    which
+  ]);
+}).env

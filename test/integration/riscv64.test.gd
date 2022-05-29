@@ -5,7 +5,7 @@ static func setup_vm(vm, use_threads := false) -> void:
 	.setup_vm(vm, use_threads)
 	vm.config.machine_class = vm.config.MACHINE_CLASS_RISCV64
 	vm.config.bios = "res://examples/riscv64/bbl64.bin"
-	vm.config.kernel = "res://examples/riscv64/Image"
+	vm.config.kernel = "res://examples/riscv64/buildroot/images/Image"
 	vm.config.cmdline = "loglevel=1 printk.time=0 console=hvc0"
 
 
@@ -31,7 +31,13 @@ func test_riscv64_example():
 	var vm = scene.get_node("VirtualMachine")
 	var terminal = scene.get_node("_/Terminal")
 	scene.get_node("_/_/PowerButton").pressed = true
-	while not "~ # " in terminal.copy_all():
+	while not "buildroot login: " in terminal.copy_all():
+		yield(yield_to(vm, "console_wrote", 20), YIELD)
+	vm.console_read("root\n".to_utf8())
+	while not "Password: " in terminal.copy_all():
+		yield(yield_to(vm, "console_wrote", 20), YIELD)
+	vm.console_read("root\n".to_utf8())
+	while not "# " in terminal.copy_all():
 		yield(yield_to(vm, "console_wrote", 20), YIELD)
 	vm.console_read("uname -a\n".to_utf8())
 	yield(yield_to(vm, "console_wrote", 20), YIELD)

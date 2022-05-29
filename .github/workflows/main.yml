@@ -142,6 +142,7 @@ jobs:
 
   test:
     name: 'Run Tests'
+    needs: [ buildroot ]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -180,31 +181,61 @@ jobs:
         if: steps.cache-plugins.outputs.cache-hit != 'true'
         shell: bash
         run: godot --no-window -s plug.gd install
-      - name: Wait for ${{ matrix.platform }} docker build to complete
-        if: ${{ matrix.os != 'macos-latest' }}
-        uses: fountainhead/action-wait-for-check@v1.0.0
+      - name: Install binaries
+        uses: ./.github/actions/install-binaries
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'Build Docker (${{ matrix.platform }}, release, ${{ matrix.bits }}) #${{ github.run_number }}'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Wait for ${{ matrix.platform }} native build to complete
-        if: ${{ matrix.os == 'macos-latest' }}
-        uses: fountainhead/action-wait-for-check@v1.0.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'Build Native (osx, release, 64) #${{ github.run_number }}'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Install binary build artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: libgdtemu-release
-          path: addons/gdtemu/native/bin
+          platform: ${{ matrix.platform }}
+          bits: ${{ matrix.bits }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run unit and integration tests
         shell: bash
         run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json
 
+  buildroot:
+    name: 'Buildroot (${{ matrix.target }}) #${{ github.run_number }}'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [ pc, riscv64 ]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Cache buildroot
+        id: cache-buildroot
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.buildroot-ccache
+            examples/**/buildroot/build
+            examples/**/buildroot/host
+            examples/**/buildroot/staging
+            examples/**/buildroot/target
+            examples/**/buildroot/images
+          key: >-
+            buildroot-${{ matrix.target }}-${{ format('{0}-{1}-{2}',
+              hashFiles(format('thirdparty/buildroot/board/gdtemu/{0}/*', matrix.target)),
+              hashFiles(format('examples/{0}/buildroot/.config', matrix.target)),
+              hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)))
+            }}
+          restore-keys: |
+            buildroot-${{ matrix.target }}-
+            buildroot-
+      - run: sudo apt-get install -y libelf-dev && make
+        if: steps.cache-buildroot.outputs.cache-hit != 'true'
+        working-directory: examples/${{ matrix.target }}/buildroot
+      - name: Upload example images
+        uses: actions/upload-artifact@v2
+        with:
+          name: example-images-${{ matrix.target }}
+          path: |
+            examples/${{ matrix.target }}/buildroot/images/*Image
+            examples/${{ matrix.target }}/buildroot/images/rootfs*
+
   export-demo:
     name: 'Export Demo'
+    needs: [ buildroot ]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -235,25 +266,12 @@ jobs:
         if: steps.cache-plugins.outputs.cache-hit != 'true'
         shell: bash
         run: godot --no-window -s plug.gd install
-      - name: Wait for ${{ matrix.platform }} docker build to complete
-        if: ${{ matrix.platform != 'osx' }}
-        uses: fountainhead/action-wait-for-check@v1.0.0
+      - name: Install binaries
+        uses: ./.github/actions/install-binaries
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'Build Docker (${{ matrix.platform }}, release, ${{ matrix.bits }}) #${{ github.run_number }}'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Wait for ${{ matrix.platform }} native build to complete
-        if: ${{ matrix.platform == 'osx' }}
-        uses: fountainhead/action-wait-for-check@v1.0.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: 'Build Native (osx, release, 64) #${{ github.run_number }}'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Install binary build artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: libgdtemu-release
-          path: addons/gdtemu/native/bin
+          platform: ${{ matrix.platform }}
+          bits: ${{ matrix.bits }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Export demo
         shell: bash
         run: godot --no-window --export ${{ matrix.platform }}.${{ matrix.bits}}

@@ -8,7 +8,7 @@ var ci := OS.get_environment("GITHUB_ACTIONS") == "true"
 static func setup_vm(vm, use_threads := false) -> void:
 	.setup_vm(vm, use_threads)
 	vm.config.machine_class = vm.config.MACHINE_CLASS_PC
-	vm.config.kernel = "res://examples/pc/bzImage"
+	vm.config.kernel = "res://examples/pc/buildroot/images/bzImage"
 	vm.config.cmdline = "loglevel=1 printk.time=0 console=hvc0"
 
 

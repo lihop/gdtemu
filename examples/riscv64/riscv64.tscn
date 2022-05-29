@@ -5,7 +5,7 @@
 [ext_resource path="res://examples/console.tscn" type="PackedScene" id=3]
 
 [node name="Console" instance=ExtResource( 3 )]
-note = "riscv64"
+note = "riscv64 | user: root | pass: root | ssh root@127.0.0.1 -p 5078"
 
 [node name="VirtualMachine" type="Node" parent="." index="1"]
 script = ExtResource( 1 )
