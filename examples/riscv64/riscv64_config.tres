@@ -6,7 +6,7 @@
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 1 )
-file = "res://examples/riscv64/buildroot/images/rootfs.ext2"
+file = "res://examples/riscv64/images/rootfs.ext2"
 mode = 2
 
 [sub_resource type="Resource" id=2]
@@ -19,7 +19,7 @@ script = ExtResource( 2 )
 machine_class = 3
 memory_size = 256
 bios = "res://examples/riscv64/bbl64.bin"
-kernel = "res://examples/riscv64/buildroot/images/Image"
+kernel = "res://examples/riscv64/images/Image"
 cmdline = "loglevel=4 console=hvc0 root=/dev/vda rw"
 block_devices = [ SubResource( 1 ) ]
 net_devices = [ SubResource( 2 ) ]

@@ -208,11 +208,10 @@ jobs:
         with:
           path: |
             ~/.buildroot-ccache
+            examples/**/images
             examples/**/buildroot/build
             examples/**/buildroot/host
             examples/**/buildroot/staging
-            examples/**/buildroot/target
-            examples/**/buildroot/images
           key: >-
             buildroot-${{ matrix.target }}-${{ format('{0}-{1}-{2}',
               hashFiles(format('thirdparty/buildroot/board/gdtemu/{0}/*', matrix.target)),
@@ -230,8 +229,8 @@ jobs:
         with:
           name: example-images-${{ matrix.target }}
           path: |
-            examples/${{ matrix.target }}/buildroot/images/*Image
-            examples/${{ matrix.target }}/buildroot/images/rootfs*
+            examples/${{ matrix.target }}/images/*Image
+            examples/${{ matrix.target }}/images/rootfs*
 
   export-demo:
     name: 'Export Demo'
@@ -282,3 +281,55 @@ jobs:
           path: |
             export/${{ matrix.platform }}.${{ matrix.bits }}
             !export/**/.gitkeep
+
+  smoke-test:
+    name: 'Smoke Test'
+    needs: [ export-demo ]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ linux, windows, osx ]
+        bits: [ 64, 32 ]
+        include:
+          - platform: linux
+            os: ubuntu-latest
+          - platform: windows
+            os: windows-latest
+          - platform: osx
+            os: macos-latest
+          - bits: 64
+            extension: x86_64
+          - bits: 32
+            extension: x86
+          - platform: windows
+            extension: exe
+        exclude:
+          - platform: osx
+            bits: 32
+    steps:
+      - name: Setup Godot
+        uses: lihop/setup-godot@v1.0.0
+        with:
+          bits: ${{ matrix.bits }}
+      - name: Download demo
+        uses: actions/download-artifact@v2
+        with:
+          name: gdtemu-demo.${{ matrix.platform }}.${{ matrix.bits }}
+          path: ./
+      - name: Run demo for 15 seconds
+        shell: bash
+        run: |
+          # Use dedicated tee file descriptor to redirect output to console *and* file.
+          exec 3> >(tee log.txt)
+          if [[ $RUNNER_OS == 'macOS' ]]; then
+            unzip gdtemu_demo.zip
+            demo=./gdtemu_demo.app/Contents/MacOS/gdtemu_demo
+          else
+            demo=./gdtemu_demo.${{ matrix.extension }}
+            chmod +x $demo
+          fi
+          $demo >&3 2>&1 & sleep 15 ; kill $!
+      - name: Check for errors in log file
+        shell: bash
+        run: '! grep ERROR log.txt'

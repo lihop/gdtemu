@@ -5,7 +5,11 @@ const default_style := preload("./inactive_console.stylebox")
 
 
 func _ready():
-	if OS.get_name() != "X11" and OS.get_name() != "Server":
+	if (
+		OS.get_name() != "X11" and OS.get_name() != "Server"
+		# GitHub Actions runners don't support KVM
+		or OS.get_environment("GITHUB_ACTIONS") == "true"
+	):
 		$_/PC.queue_free()
 		yield(get_tree(), "idle_frame")
 	else:
