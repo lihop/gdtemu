@@ -1,13 +1,10 @@
 extends Control
 
 const active_console_stylebox := preload("./active_console.stylebox")
-
-var default_style: StyleBox
+const default_style := preload("./inactive_console.stylebox")
 
 
 func _ready():
-	default_style = $_/_/RISCV32.get("custom_styles/panel")
-
 	if OS.get_name() != "X11" and OS.get_name() != "Server":
 		$_/PC.queue_free()
 		yield(get_tree(), "idle_frame")
