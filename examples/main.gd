@@ -20,8 +20,9 @@ func _ready():
 		$_/_/RISCV32/VirtualMachine.use_threads = true
 		$_/_/RISCV64/VirtualMachine.use_threads = true
 
-	$_/_/RISCV32/_/_/PowerButton.pressed = true
-	$_/_/RISCV64/_/_/PowerButton.pressed = true
+	if OS.get_name() != "OSX":
+		$_/_/RISCV32/_/_/PowerButton.pressed = true
+		$_/_/RISCV64/_/_/PowerButton.pressed = true
 
 
 func _on_Console_focus_entered(node: String) -> void:

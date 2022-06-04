@@ -35,6 +35,7 @@ margin_bottom = 298.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 custom_styles/panel = SubResource( 1 )
+autostart = false
 
 [node name="RISCV64" parent="_/_" groups=["console"] instance=ExtResource( 4 )]
 anchor_right = 0.0
@@ -44,6 +45,7 @@ margin_right = 1024.0
 margin_bottom = 298.0
 size_flags_horizontal = 3
 custom_styles/panel = SubResource( 1 )
+autostart = false
 
 [node name="PC" parent="_" groups=["console"] instance=ExtResource( 3 )]
 anchor_right = 0.0
