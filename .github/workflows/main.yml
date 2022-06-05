@@ -192,12 +192,12 @@ jobs:
         run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json
 
   buildroot:
-    name: 'Buildroot (${{ matrix.target }}) #${{ github.run_number }}'
+    name: Buildroot
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        target: [ pc, riscv64 ]
+        target: [ pc, riscv32, riscv64 ]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -216,11 +216,10 @@ jobs:
             buildroot-${{ matrix.target }}-${{ format('{0}-{1}-{2}',
               hashFiles(format('thirdparty/buildroot/board/gdtemu/{0}/*', matrix.target)),
               hashFiles(format('examples/{0}/buildroot/.config', matrix.target)),
-              hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)))
+              hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)) || '0')
             }}
           restore-keys: |
             buildroot-${{ matrix.target }}-
-            buildroot-
       - run: sudo apt-get install -y libelf-dev && make
         if: steps.cache-buildroot.outputs.cache-hit != 'true'
         working-directory: examples/${{ matrix.target }}/buildroot

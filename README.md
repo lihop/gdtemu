@@ -16,8 +16,8 @@ Buildroot can be used to generate kernels and root filesystems for VMs.
 These drivers must be enabled in order for the console and block devices to work:
 1. Device Drivers -> Virtio drivers -> PCI driver for virtio devices <\*>
 2. Device Drivers -> Block devices -> Virtio block driver <\*>
-3. Device Drivers -> Character devices -> Virtio console <\*>
-4. Device Drivers -> Character devices -> RISC-V SBI console support [ ]
+3. Device Drivers -> Character devices -> RISC-V SBI console support [ ]
+4. Device Drivers -> Character devices -> Virtio console <\*>
 
 #### Network Devices
 Network device support is confirmed with kernel version 4.19.245.

@@ -10,6 +10,21 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Download pc example images
+      uses: actions/download-artifact@v2
+      with:
+        name: example-images-pc
+        path: examples/pc/images
+    - name: Download riscv32 example images
+      uses: actions/download-artifact@v2
+      with:
+        name: example-images-riscv32
+        path: examples/riscv32/images
+    - name: Download riscv64 example images
+      uses: actions/download-artifact@v2
+      with:
+        name: example-images-riscv64
+        path: examples/riscv64/images
     - name: Wait for ${{ inputs.platform }} docker build to complete
       if: ${{ inputs.platform != 'osx' }}
       uses: fountainhead/action-wait-for-check@v1.0.0
@@ -29,25 +44,3 @@ runs:
       with:
         name: libgdtemu-release
         path: addons/gdtemu/native/bin
-    - name: Wait for buildroot riscv64 to complete
-      uses: fountainhead/action-wait-for-check@v1.0.0
-      with:
-        token: ${{ inputs.GITHUB_TOKEN }}
-        checkName: 'Buildroot (riscv64) #${{ github.run_number }}'
-        ref: ${{ github.event.pull_request.head.sha || github.sha }}
-    - name: Download riscv64 example images
-      uses: actions/download-artifact@v2
-      with:
-        name: example-images-riscv64
-        path: examples/riscv64/images
-    - name: Wait for buildroot pc to complete
-      uses: fountainhead/action-wait-for-check@v1.0.0
-      with:
-        token: ${{ inputs.GITHUB_TOKEN }}
-        checkName: 'Buildroot (pc) #${{ github.run_number }}'
-        ref: ${{ github.event.pull_request.head.sha || github.sha }}
-    - name: Download pc example images
-      uses: actions/download-artifact@v2
-      with:
-        name: example-images-pc
-        path: examples/pc/images
