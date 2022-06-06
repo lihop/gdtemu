@@ -4,7 +4,7 @@ extends "./test_base.gd"
 static func setup_vm(vm, use_threads := false) -> void:
 	.setup_vm(vm, use_threads)
 	vm.config.machine_class = vm.config.MACHINE_CLASS_RISCV64
-	vm.config.bios = "res://examples/riscv64/bbl64.bin"
+	vm.config.bios = "res://addons/gdtemu/native/bin/bbl64.bin"
 	vm.config.kernel = "res://examples/riscv64/images/Image"
 	vm.config.cmdline = "loglevel=1 printk.time=0 console=hvc0"
 

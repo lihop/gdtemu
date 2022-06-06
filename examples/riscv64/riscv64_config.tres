@@ -18,7 +18,7 @@ port_forwards = PoolStringArray( "tcp:127.0.0.1:5078-0.0.0.0:22" )
 script = ExtResource( 2 )
 machine_class = 3
 memory_size = 256
-bios = "res://examples/riscv64/bbl64.bin"
+bios = "res://addons/gdtemu/native/bin/bbl64.bin"
 kernel = "res://examples/riscv64/images/Image"
 cmdline = "loglevel=4 console=hvc0 root=/dev/vda rw"
 block_devices = [ SubResource( 1 ) ]
