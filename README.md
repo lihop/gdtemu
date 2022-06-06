@@ -3,6 +3,8 @@
   SPDX-License-Identifier: MIT
 -->
 
+<img align="left" width="64" height="64" src="icon.png">
+
 # gdtemu
 
 ![Screenshot of example scene showing PC, RISC-V 32, and RISC-V 64 consoles.](/docs/screenshot.png)
