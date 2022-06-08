@@ -3,4 +3,4 @@
 	url = https://github.com/lihop/godot-cpp
 [submodule "thirdparty/buildroot"]
 	path = thirdparty/buildroot
-	url = https://github.com/lihop/buildroot
+	url = https://github.com/buildroot/buildroot
