@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2019 Fernando Lemos
+# SPDX-License-Identifier: MIT
+
+# Build products
+temu
+libtemu.a
+build_filelist
+splitimg
+*.o
+*.d
+
+# macOS-specific
+.DS_Store
