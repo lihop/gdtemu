@@ -1,0 +1,1189 @@
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/.github/workflows/ci.yml b/addons/gdtemu/native/thirdparty/TinyEMU/.github/workflows/ci.yml
+index 9168d9d..8386c39 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/.github/workflows/ci.yml
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/.github/workflows/ci.yml
+@@ -1,3 +1,6 @@
++# SPDX-FileCopyrightText: 2020 Fernando Lemos
++# SPDX-License-Identifier: MIT
++
+ name: Build
+ 
+ on: [push, pull_request]
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/.gitignore b/addons/gdtemu/native/thirdparty/TinyEMU/.gitignore
+index bb71a97..c4e0acf 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/.gitignore
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/.gitignore
+@@ -1,3 +1,6 @@
++# SPDX-FileCopyrightText: 2019 Fernando Lemos
++# SPDX-License-Identifier: MIT
++
+ # Build products
+ temu
+ libtemu.a
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/aes.c b/addons/gdtemu/native/thirdparty/TinyEMU/aes.c
+index ac8af6d..f26c5d1 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/aes.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/aes.c
+@@ -1,4 +1,8 @@
+ /**
++ * SPDX-FileCopyrightText: Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
++ * SPDX-FileCopyrightText: Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
++ * SPDX-FileCopyrightText: Paulo Barreto <paulo.barreto@terra.com.br>
++ * SPDX-License-Identifier: CC0-1.0
+  *
+  * aes.c - integrated in QEMU by Fabrice Bellard from the OpenSSL project.
+  */
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/aes.h b/addons/gdtemu/native/thirdparty/TinyEMU/aes.h
+index c4d7a1c..2e0ff9e 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/aes.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/aes.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * OpenSSL compatible AES header
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/block_net.c b/addons/gdtemu/native/thirdparty/TinyEMU/block_net.c
+index 66794d4..09852a2 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/block_net.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/block_net.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * HTTP block device
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/build_filelist.c b/addons/gdtemu/native/thirdparty/TinyEMU/build_filelist.c
+index e63a155..0718ea8 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/build_filelist.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/build_filelist.c
+@@ -1,6 +1,9 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * File list builder for RISCVEMU network filesystem
+  * 
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2017 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/compress.c b/addons/gdtemu/native/thirdparty/TinyEMU/compress.c
+index 4929357..0e24256 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/compress.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/compress.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Compressed file support
+  *
+  * Copyright (c) 2019 Fernando Lemos
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/compress.h b/addons/gdtemu/native/thirdparty/TinyEMU/compress.h
+index d80a416..0818f09 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/compress.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/compress.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Compressed file support
+  *
+  * Copyright (c) 2019 Fernando Lemos
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/cutils.c b/addons/gdtemu/native/thirdparty/TinyEMU/cutils.c
+index a86f90b..f221f0e 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/cutils.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/cutils.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Misc C utilities
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/cutils.h b/addons/gdtemu/native/thirdparty/TinyEMU/cutils.h
+index 2154eec..727985e 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/cutils.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/cutils.h
+@@ -1,6 +1,10 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * C utilities
+  * 
++ * Copyright (c) 2019 Jim Huang
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2016 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/elf.c b/addons/gdtemu/native/thirdparty/TinyEMU/elf.c
+index 76ee734..0df73f7 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/elf.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/elf.c
+@@ -1,6 +1,9 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * ELF format support
+  *
++ * Copyright (c) 2022 Leroy Hopson
+  * Copyright (c) 2019 Fernando Lemos
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/elf.h b/addons/gdtemu/native/thirdparty/TinyEMU/elf.h
+index da92050..8acfdfd 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/elf.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/elf.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * ELF format support
+  *
+  * Copyright (c) 2019 Fernando Lemos
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fbuf.h b/addons/gdtemu/native/thirdparty/TinyEMU/fbuf.h
+index 9736a49..741951b 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fbuf.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fbuf.h
+@@ -1,3 +1,5 @@
++// SPDX-FileCopyrightText: Fabrice Bellard
++// SPDX-License-Identifier: MIT
+ #ifndef FBUF_H
+ #define FBUF_H
+ 
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs.c b/addons/gdtemu/native/thirdparty/TinyEMU/fs.c
+index 7f92d82..0190013 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Filesystem utilities
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs.h b/addons/gdtemu/native/thirdparty/TinyEMU/fs.h
+index 4c38e84..edb2124 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Filesystem abstraction
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs_disk.c b/addons/gdtemu/native/thirdparty/TinyEMU/fs_disk.c
+index 0e106cf..3cd451a 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs_disk.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs_disk.c
+@@ -1,6 +1,9 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Filesystem on disk
+  * 
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2016 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs_net.c b/addons/gdtemu/native/thirdparty/TinyEMU/fs_net.c
+index 12852e5..bf258ce 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs_net.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs_net.c
+@@ -1,6 +1,9 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Networked Filesystem using HTTP
+  * 
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2016-2017 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.c b/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.c
+index 37f399d..853434c 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Misc FS utilities
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.h b/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.h
+index 4e4b9cd..642c16d 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs_utils.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Misc FS utilities
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.c b/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.c
+index b4857b0..33b48dd 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * HTTP file download
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.h b/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.h
+index 35b6a4b..0f88b94 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/fs_wget.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * HTTP file download
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/ide.c b/addons/gdtemu/native/thirdparty/TinyEMU/ide.c
+index 4952965..a760b22 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/ide.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/ide.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * IDE emulation
+  * 
+  * Copyright (c) 2003-2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/ide.h b/addons/gdtemu/native/thirdparty/TinyEMU/ide.h
+index 257a6a0..59be412 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/ide.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/ide.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * IDE emulation
+  * 
+  * Copyright (c) 2003-2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/iomem.c b/addons/gdtemu/native/thirdparty/TinyEMU/iomem.c
+index c63ada0..4a1eafc 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/iomem.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/iomem.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * IO memory handling
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/iomem.h b/addons/gdtemu/native/thirdparty/TinyEMU/iomem.h
+index cc561b4..c5ada6d 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/iomem.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/iomem.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * IO memory handling
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/js/lib.js b/addons/gdtemu/native/thirdparty/TinyEMU/js/lib.js
+index 5dbf2b2..8273ed8 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/js/lib.js
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/js/lib.js
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * JS emulator library
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/jsemu.c b/addons/gdtemu/native/thirdparty/TinyEMU/jsemu.c
+index 3641db4..f17418f 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/jsemu.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/jsemu.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * JS emulator main
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/json.c b/addons/gdtemu/native/thirdparty/TinyEMU/json.c
+index d1ebe82..ad43f88 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/json.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/json.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Pseudo JSON parser
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/json.h b/addons/gdtemu/native/thirdparty/TinyEMU/json.h
+index 148d050..c041954 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/json.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/json.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Pseudo JSON parser
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/list.h b/addons/gdtemu/native/thirdparty/TinyEMU/list.h
+index 3fbea04..4a371d5 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/list.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/list.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Linux klist like system
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/machine.c b/addons/gdtemu/native/thirdparty/TinyEMU/machine.c
+index 8c4a259..0d2bca3 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/machine.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/machine.c
+@@ -1,6 +1,10 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * VM utilities
+  * 
++ * Copyright (c) 2022 Leroy Hopson
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2017 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/machine.h b/addons/gdtemu/native/thirdparty/TinyEMU/machine.h
+index 113d32b..df3c230 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/machine.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/machine.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * VM definitions
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/netinit.sh b/addons/gdtemu/native/thirdparty/TinyEMU/netinit.sh
+index c2dadf9..e5f3e84 100755
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/netinit.sh
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/netinit.sh
+@@ -1,5 +1,7 @@
+ #!/bin/sh
+ #
++# SPDX-License-Identifier: MIT
++#
+ # RISCVEMU Ethernet bridge and NAT configuration (run with sudo)
+ #
+ # Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/pci.c b/addons/gdtemu/native/thirdparty/TinyEMU/pci.c
+index d37b737..a6e74a6 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/pci.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/pci.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Simple PCI bus driver
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/pci.h b/addons/gdtemu/native/thirdparty/TinyEMU/pci.h
+index 39d6efe..cdb1e97 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/pci.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/pci.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * Simple PCI bus driver
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/pckbd.c b/addons/gdtemu/native/thirdparty/TinyEMU/pckbd.c
+index e1c73d7..dfd4ae2 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/pckbd.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/pckbd.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * QEMU PC keyboard emulation
+  *
+  * Copyright (c) 2003 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/ps2.c b/addons/gdtemu/native/thirdparty/TinyEMU/ps2.c
+index c787568..10080f7 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/ps2.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/ps2.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * QEMU PS/2 keyboard/mouse emulation
+  *
+  * Copyright (c) 2003 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/ps2.h b/addons/gdtemu/native/thirdparty/TinyEMU/ps2.h
+index 47bcfe9..ad36c99 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/ps2.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/ps2.h
+@@ -1,3 +1,5 @@
++// SPDX-FileCopyrightText: Fabrice Bellard
++// SPDX-License-Identifier: MIT
+ /* ps2.c */
+ typedef struct PS2MouseState PS2MouseState;
+ typedef struct PS2KbdState PS2KbdState;
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.c b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.c
+index ba4fa4c..b232d62 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * RISCV CPU emulator
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.h b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.h
+index 6fb8b37..26dc8de 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * RISCV CPU emulator
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_fp_template.h b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_fp_template.h
+index 21be210..c151206 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_fp_template.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_fp_template.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * RISCV emulator
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_priv.h b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_priv.h
+index 983d8b8..4b7d7c8 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_priv.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_priv.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * RISCV CPU emulator private definitions
+  * 
+  * Copyright (c) 2016-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_template.h b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_template.h
+index 5092062..5ab50f5 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_template.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_cpu_template.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * RISCV emulator
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_machine.c b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_machine.c
+index 31fd5a0..1e86404 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/riscv_machine.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/riscv_machine.c
+@@ -1,6 +1,9 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * RISCV machine
+  * 
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2016-2017 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/sdl.c b/addons/gdtemu/native/thirdparty/TinyEMU/sdl.c
+index 71c5ff0..77d9d36 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/sdl.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/sdl.c
+@@ -1,6 +1,9 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * SDL display driver
+  *
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2017 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/sha256.c b/addons/gdtemu/native/thirdparty/TinyEMU/sha256.c
+index 97bfbda..8cd4d28 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/sha256.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/sha256.c
+@@ -1,4 +1,8 @@
+-/* LibTomCrypt, modular cryptographic library -- Tom St Denis
++/*
++ * SPDX-FileCopyrightText: Tom St Denis <tomstdenis@gmail.com>
++ * SPDX-License-Identifier: Unlicense
++ *
++ * LibTomCrypt, modular cryptographic library -- Tom St Denis
+  *
+  * LibTomCrypt is a library that provides various cryptographic
+  * algorithms in a highly modular and flexible manner.
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/sha256.h b/addons/gdtemu/native/thirdparty/TinyEMU/sha256.h
+index b43115f..97d3a39 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/sha256.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/sha256.h
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2017 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * OpenSSL compatible SHA256 header
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/simplefb.c b/addons/gdtemu/native/thirdparty/TinyEMU/simplefb.c
+index 5664cea..229f8ec 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/simplefb.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/simplefb.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2017 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * Simple frame buffer
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.c
+index 3e5f457..20de4cf 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * QEMU BOOTP/DHCP server
+  *
+  * Copyright (c) 2004 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.h
+index 30c30ab..213def7 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/bootp.h
+@@ -1,4 +1,9 @@
+-/* bootp/dhcp defines */
++/*
++ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
++ * bootp/dhcp defines
++ */
+ 
+ #define BOOTP_SERVER	67
+ #define BOOTP_CLIENT	68
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/cksum.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/cksum.c
+index 5aa9060..d5feada 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/cksum.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/cksum.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1988, 1992, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1988, 1992, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/debug.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/debug.h
+index 6cfa61e..43e09a5 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/debug.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/debug.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.c
+index e6d114a..56aa0f1 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.h
+index 2dac1c7..cf348bc 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/if.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip.h
+index 48ea38e..2abd3c0 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.c
+index 751a8e2..73a54b8 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.h
+index 2692822..b935f6b 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_icmp.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_input.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_input.c
+index 50ab951..bd921d1 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_input.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_input.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_output.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_output.c
+index 657c9af..a79d8ce 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_output.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/ip_output.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1990, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1990, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/libslirp.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/libslirp.h
+index 574852b..a8c3f0e 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/libslirp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/libslirp.h
+@@ -1,3 +1,7 @@
++/*
++ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ */
+ #ifndef _LIBSLIRP_H
+ #define _LIBSLIRP_H
+ 
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/main.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/main.h
+index 0dd8d81..75a2629 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/main.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/main.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.c
+index 6c115ee..5498417 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.h
+index 97729e2..f4ea377 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/mbuf.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.c
+index 7a79cdb..03d72ea 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.h
+index 5c307c9..78e3b59 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/misc.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.c
+index ac20f21..e630d0b 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.h
+index 4f22e7c..931e620 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/sbuf.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.c
+index 56dcf56..1cabf8b 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.c
+@@ -1,7 +1,10 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * libslirp glue
+  *
+  * Copyright (c) 2004-2008 Fabrice Bellard
++ * Copyright (c) 2019 Fernando Lemos
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+  * of this software and associated documentation files (the "Software"), to deal
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.h
+index 0bbdce4..3d34e08 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp.h
+@@ -1,3 +1,9 @@
++/*
++ * SPDX-FileCopyrightText: 2004-2008 Fabrice Bellard
++ * SPDX-FileCopyrightText: 2019 Fernando Lemos
++ * SPDX-License-Identifier: MIT
++ */
++
+ #ifndef __COMMON_H__
+ #define __COMMON_H__
+ 
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp_config.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp_config.h
+index 18db45c..1f34aaf 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp_config.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/slirp_config.h
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * User definable configuration options
+  */
+ 
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.c
+index 1ba8ae1..be87285 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.c
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.h
+index 857b0da..91423f0 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/socket.h
+@@ -1,4 +1,6 @@
+ /*
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
+  * Copyright (c) 1995 Danny Gasparovski.
+  *
+  * Please read the file COPYRIGHT for the
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp.h
+index 9d06836..809e101 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_input.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_input.c
+index 53dbc87..20b4bfd 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_input.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_input.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1990, 1993, 1994
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1990, 1993, 1994 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_output.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_output.c
+index 01725db..02761a4 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_output.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_output.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1990, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1990, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_subr.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_subr.c
+index 1557e89..7fa5299 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_subr.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_subr.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1990, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1990, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.c
+index 1e6e051..fbd2e73 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1990, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1990, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.h
+index ff17914..53f630e 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_timer.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_var.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_var.h
+index 004193f..1f064d8 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_var.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcp_var.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1993, 1994
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1993, 1994 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcpip.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcpip.h
+index 7974ce3..1b674b9 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcpip.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tcpip.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tftp.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tftp.h
+index b9f0847..4ac0975 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tftp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/tftp.h
+@@ -1,4 +1,9 @@
+-/* tftp defines */
++/*
++ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
++ * tftp defines
++ */
+ 
+ #define TFTP_SESSIONS_MAX 3
+ 
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.c b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.c
+index 2d04f12..f0f4646 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.c
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1988, 1990, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1988, 1990, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.h b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.h
+index 9b5c3cf..31482bc 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/slirp/udp.h
+@@ -1,6 +1,8 @@
+ /*
+- * Copyright (c) 1982, 1986, 1993
+- *	The Regents of the University of California.  All rights reserved.
++ * SPDX-License-Identifier: BSD-3-Clause
++ *
++ * Copyright (c) 1982, 1986, 1993 The Regents of the University of California.
++ * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/softfp.c b/addons/gdtemu/native/thirdparty/TinyEMU/softfp.c
+index 2a1aad0..d905d20 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/softfp.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/softfp.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * SoftFP Library
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/softfp.h b/addons/gdtemu/native/thirdparty/TinyEMU/softfp.h
+index 725c3c2..1a6cb27 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/softfp.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/softfp.h
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * SoftFP Library
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template.h b/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template.h
+index 7503767..36c4796 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template.h
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * SoftFP Library
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template_icvt.h b/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template_icvt.h
+index 9360ac1..02fc664 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template_icvt.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/softfp_template_icvt.h
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * SoftFP Library
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/splitimg.c b/addons/gdtemu/native/thirdparty/TinyEMU/splitimg.c
+index 3271290..bc20067 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/splitimg.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/splitimg.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * Disk image splitter
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/temu.c b/addons/gdtemu/native/thirdparty/TinyEMU/temu.c
+index c87f1a8..4e4eb3b 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/temu.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/temu.c
+@@ -1,6 +1,9 @@
+ /*
++ * SPDX-License-Identifier: MIT
++ *
+  * TinyEMU
+  * 
++ * Copyright (c) 2019 Fernando Lemos
+  * Copyright (c) 2016-2018 Fabrice Bellard
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a copy
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/vga.c b/addons/gdtemu/native/thirdparty/TinyEMU/vga.c
+index 908a320..e0cb949 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/vga.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/vga.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2003-2017 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * Dummy VGA device
+  * 
+  * Copyright (c) 2003-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/virtio.c b/addons/gdtemu/native/thirdparty/TinyEMU/virtio.c
+index bab0664..0fab94c 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/virtio.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/virtio.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * VIRTIO driver
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/virtio.h b/addons/gdtemu/native/thirdparty/TinyEMU/virtio.h
+index 556b934..a014e01 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/virtio.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/virtio.h
+@@ -1,4 +1,8 @@
+ /*
++ * SDPX-FileCopyrightText: 2016 Fabrice Bellard
++ * SDPX-FileCopyrightText: 2022 Leroy Hopson
++ * SPDX-License-Identifier: MIT
++ *
+  * VIRTIO driver
+  * 
+  * Copyright (c) 2016 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/vmmouse.c b/addons/gdtemu/native/thirdparty/TinyEMU/vmmouse.c
+index 927e510..492a14f 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/vmmouse.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/vmmouse.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2017 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * VM mouse emulation
+  * 
+  * Copyright (c) 2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.c b/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.c
+index e599ab8..9cdcb53 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2011-2017 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * x86 CPU emulator stub
+  * 
+  * Copyright (c) 2011-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.h b/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.h
+index 254f7f5..215d770 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.h
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/x86_cpu.h
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2011-2017 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * x86 CPU emulator
+  * 
+  * Copyright (c) 2011-2017 Fabrice Bellard
+diff --git a/addons/gdtemu/native/thirdparty/TinyEMU/x86_machine.c b/addons/gdtemu/native/thirdparty/TinyEMU/x86_machine.c
+index 0fce075..17a669a 100644
+--- a/addons/gdtemu/native/thirdparty/TinyEMU/x86_machine.c
++++ b/addons/gdtemu/native/thirdparty/TinyEMU/x86_machine.c
+@@ -1,4 +1,7 @@
+ /*
++ * SPDX-FileCopyrightText: 2011-2017 Fabrice Bellard
++ * SPDX-License-Identifier: MIT
++ *
+  * PC emulator
+  * 
+  * Copyright (c) 2011-2017 Fabrice Bellard
