@@ -218,8 +218,6 @@ jobs:
               hashFiles(format('examples/{0}/buildroot/.config', matrix.target)),
               hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)) || '0')
             }}
-          restore-keys: |
-            buildroot-${{ matrix.target }}-
       - run: sudo apt-get install -y libelf-dev && make
         if: steps.cache-buildroot.outputs.cache-hit != 'true'
         working-directory: examples/${{ matrix.target }}/buildroot
