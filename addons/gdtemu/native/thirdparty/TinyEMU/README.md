@@ -5,9 +5,7 @@
   SPDX-License-Identifier: MIT
 -->
 
-# libTinyEMU
-
-[![Build](https://github.com/lihop/TinyEMU/workflows/Build/badge.svg)][GitHub Actions]
+# TinyEMU
 
 This is a modified version of [Fabrice Bellard's TinyEMU][TinyEMU] which is
 forked from [Fernando Lemos's version](https://github.com/fernandotcl/TinyEMU/).
@@ -16,7 +14,6 @@ This fork is primarily intended for use as a library by the [gdtemu plugin] for 
 
 The `temu` executable will eventually be removed and calls to `exit()` replaced.
 
-[GitHub Actions]: https://github.com/lihop/TinyEMU/actions?query=workflow%3ABuild
 [TinyEMU]: https://bellard.org/tinyemu/
 [gdtemu plugin]: https://github.com/lihop/gdtemu/
 [Godot game engine]: https://godotengine.org/
