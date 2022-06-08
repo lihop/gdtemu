@@ -1,4 +1,7 @@
 /*
+ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
  * SoftFP Library
  * 
  * Copyright (c) 2016 Fabrice Bellard

@@ -1,3 +1,7 @@
+/*
+ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ */
 #ifndef _LIBSLIRP_H
 #define _LIBSLIRP_H
 

@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * Pseudo JSON parser
  * 
  * Copyright (c) 2017 Fabrice Bellard

@@ -1,6 +1,9 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * ELF format support
  *
+ * Copyright (c) 2022 Leroy Hopson
  * Copyright (c) 2019 Fernando Lemos
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * Linux klist like system
  * 
  * Copyright (c) 2016-2017 Fabrice Bellard

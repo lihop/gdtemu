@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * IDE emulation
  * 
  * Copyright (c) 2003-2016 Fabrice Bellard

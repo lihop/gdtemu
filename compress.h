@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * Compressed file support
  *
  * Copyright (c) 2019 Fernando Lemos

@@ -1,6 +1,9 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * Filesystem on disk
  * 
+ * Copyright (c) 2019 Fernando Lemos
  * Copyright (c) 2016 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

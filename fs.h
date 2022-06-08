@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * Filesystem abstraction
  * 
  * Copyright (c) 2016 Fabrice Bellard

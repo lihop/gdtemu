@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * OpenSSL compatible AES header
  * 
  * Copyright (c) 2017 Fabrice Bellard

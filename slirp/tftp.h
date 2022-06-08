@@ -1,4 +1,9 @@
-/* tftp defines */
+/*
+ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
+ * tftp defines
+ */
 
 #define TFTP_SESSIONS_MAX 3
 

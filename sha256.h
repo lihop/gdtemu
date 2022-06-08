@@ -1,4 +1,7 @@
 /*
+ * SPDX-FileCopyrightText: 2017 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
  * OpenSSL compatible SHA256 header
  * 
  * Copyright (c) 2017 Fabrice Bellard

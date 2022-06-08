@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: Fabrice Bellard
+// SPDX-License-Identifier: MIT
 /* ps2.c */
 typedef struct PS2MouseState PS2MouseState;
 typedef struct PS2KbdState PS2KbdState;

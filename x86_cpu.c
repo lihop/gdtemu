@@ -1,4 +1,7 @@
 /*
+ * SPDX-FileCopyrightText: 2011-2017 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
  * x86 CPU emulator stub
  * 
  * Copyright (c) 2011-2017 Fabrice Bellard

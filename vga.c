@@ -1,4 +1,7 @@
 /*
+ * SPDX-FileCopyrightText: 2003-2017 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
  * Dummy VGA device
  * 
  * Copyright (c) 2003-2017 Fabrice Bellard

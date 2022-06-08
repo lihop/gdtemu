@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2004-2008 Fabrice Bellard
+ * SPDX-FileCopyrightText: 2019 Fernando Lemos
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef __COMMON_H__
 #define __COMMON_H__
 

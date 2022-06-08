@@ -1,4 +1,8 @@
-/* LibTomCrypt, modular cryptographic library -- Tom St Denis
+/*
+ * SPDX-FileCopyrightText: Tom St Denis <tomstdenis@gmail.com>
+ * SPDX-License-Identifier: Unlicense
+ *
+ * LibTomCrypt, modular cryptographic library -- Tom St Denis
  *
  * LibTomCrypt is a library that provides various cryptographic
  * algorithms in a highly modular and flexible manner.

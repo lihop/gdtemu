@@ -1,6 +1,9 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * File list builder for RISCVEMU network filesystem
  * 
+ * Copyright (c) 2019 Fernando Lemos
  * Copyright (c) 2017 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

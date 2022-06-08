@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * QEMU PC keyboard emulation
  *
  * Copyright (c) 2003 Fabrice Bellard

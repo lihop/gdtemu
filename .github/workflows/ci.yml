@@ -1,8 +1,18 @@
+# SPDX-FileCopyrightText: 2022 Leroy Hopson
+# SPDX-FileCopyrightText: 2020 Fernando Lemos
+# SPDX-License-Identifier: MIT
+
 name: Build
 
 on: [push, pull_request]
 
 jobs:
+
+  reuse_compliance:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: fsfe/reuse-action@v1.1.1
 
   build_linux:
     runs-on: ubuntu-18.04

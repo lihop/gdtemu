@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * JS emulator main
  * 
  * Copyright (c) 2016-2017 Fabrice Bellard

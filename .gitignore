@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019 Fernando Lemos
+# SPDX-License-Identifier: MIT
+
 # Build products
 temu
 libtemu.a

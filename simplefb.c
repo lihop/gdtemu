@@ -1,4 +1,7 @@
 /*
+ * SPDX-FileCopyrightText: 2017 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
  * Simple frame buffer
  * 
  * Copyright (c) 2017 Fabrice Bellard

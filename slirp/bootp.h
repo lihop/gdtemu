@@ -1,4 +1,9 @@
-/* bootp/dhcp defines */
+/*
+ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
+ * bootp/dhcp defines
+ */
 
 #define BOOTP_SERVER	67
 #define BOOTP_CLIENT	68

@@ -1,4 +1,7 @@
 /*
+ * SPDX-FileCopyrightText: 2004 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
  * User definable configuration options
  */
 

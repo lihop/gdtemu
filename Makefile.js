@@ -1,6 +1,9 @@
 #
+# SPDX-License-Identifier: MIT
+#
 # TinyEMU emulator
-# 
+#
+# Copyright (c) 2019 Jim Huang
 # Copyright (c) 2016-2018 Fabrice Bellard
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy

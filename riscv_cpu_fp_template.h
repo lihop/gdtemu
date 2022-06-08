@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * RISCV emulator
  * 
  * Copyright (c) 2016 Fabrice Bellard

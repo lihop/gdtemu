@@ -1,4 +1,7 @@
 /*
+ * SPDX-FileCopyrightText: 2016 Fabrice Bellard
+ * SPDX-License-Identifier: MIT
+ *
  * VIRTIO driver
  * 
  * Copyright (c) 2016 Fabrice Bellard

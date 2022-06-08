@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# SPDX-License-Identifier: MIT
+#
 # RISCVEMU Ethernet bridge and NAT configuration (run with sudo)
 #
 # Copyright (c) 2017 Fabrice Bellard

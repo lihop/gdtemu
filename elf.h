@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * ELF format support
  *
  * Copyright (c) 2019 Fernando Lemos

@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * RISCV CPU emulator private definitions
  * 
  * Copyright (c) 2016-2017 Fabrice Bellard

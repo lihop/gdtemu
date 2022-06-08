@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: Fabrice Bellard
+// SPDX-License-Identifier: MIT
 #ifndef FBUF_H
 #define FBUF_H
 

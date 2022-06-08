@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libTinyEMU
+Upstream-Contact: Leroy Hopson <libtinyemu@leroy.geek.nz>
+Source: https://github.com/lihop/libTinyEMU
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...

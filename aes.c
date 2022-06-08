@@ -1,4 +1,8 @@
 /**
+ * SPDX-FileCopyrightText: Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
+ * SPDX-FileCopyrightText: Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
+ * SPDX-FileCopyrightText: Paulo Barreto <paulo.barreto@terra.com.br>
+ * SPDX-License-Identifier: CC0-1.0
  *
  * aes.c - integrated in QEMU by Fabrice Bellard from the OpenSSL project.
  */

@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * QEMU BOOTP/DHCP server
  *
  * Copyright (c) 2004 Fabrice Bellard
