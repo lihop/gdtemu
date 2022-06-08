@@ -1,81 +1,63 @@
-# TinyEMU
+<!--
+  SPDX-FileCopyrightText: 2022 Leroy Hopson
+  SPDX-FileCopyrightText: 2019-2020 Fernando Lemos
+  SPDX-FileCopyrightText: 2017-2018 Fabrice Bellard
+  SPDX-License-Identifier: MIT
+-->
 
-[![Build](https://github.com/fernandotcl/TinyEMU/workflows/Build/badge.svg)][GitHub Actions]
+# libTinyEMU
 
-This is a modified version of [Fabrice Bellard's TinyEMU][TinyEMU].
+[![Build](https://github.com/lihop/TinyEMU/workflows/Build/badge.svg)][GitHub Actions]
 
-[GitHub Actions]: https://github.com/fernandotcl/TinyEMU/actions?query=workflow%3ABuild
+This is a modified version of [Fabrice Bellard's TinyEMU][TinyEMU] which is
+forked from [Fernando Lemos's version](https://github.com/fernandotcl/TinyEMU/).
+
+This fork is primarily intended for use as a library by the [gdtemu plugin] for the [Godot game engine].
+
+The `temu` executable will eventually be removed and calls to `exit()` replaced.
+
+[GitHub Actions]: https://github.com/lihop/TinyEMU/actions?query=workflow%3ABuild
 [TinyEMU]: https://bellard.org/tinyemu/
+[gdtemu plugin]: https://github.com/lihop/gdtemu/
+[Godot game engine]: https://godotengine.org/
 
 ## Features
 
 - 32/64/128-bit RISC-V emulation.
+- x86 system emulator based on [KVM].
 - VirtIO console, network, block device, input and 9P filesystem.
-- Framebuffer emulation through SDL.
+- Graphical display with SDL 2.
 - Remote HTTP block device and filesystem.
 - Small code, easy to modify, no external dependencies.
-
-Changes from Fabrice Bellard's 2019-02-10 release:
-
-- macOS and [iOS][TinyEMU-iOS] support.
+- Linux, JavaScript, macOS, iOS and (limited) Windows support.
 - Support for loading ELF images.
 - Support for loading initrd images or compressed initramfs archives.
-- Framebuffer support through SDL 2 instead of 1.2.
 
-[TinyEMU-iOS]: https://github.com/fernandotcl/TinyEMU-iOS
+[KVM]: https://www.linux-kvm.org/
 
 ## Usage
 
-Use the VM images available from Fabrice Bellard's [jslinux][] (no need to download them):
+See the [gdtemu project] for an example of how this library can be used.
 
-```
-$ temu https://bellard.org/jslinux/buildroot-riscv64.cfg
-
-Welcome to JS/Linux (riscv64)
-
-Use 'vflogin username' to connect to your account.
-You can create a new account at https://vfsync.org/signup .
-Use 'export_file filename' to export a file to your computer.
-Imported files are written to the home directory.
-
-[root@localhost ~]# uname -a
-Linux localhost 4.15.0-00049-ga3b1e7a-dirty #11 Thu Nov 8 20:30:26 CET 2018 riscv64 GNU/Linux
-[root@localhost ~]#
-```
-
-Use `C-a x` to exit the emulator.
-
-You can also use TinyEMU with local configuration and disks. You can find more information in Fabrice Bellard's [documentation for TinyEMU][tinyemu-readme].
-
-[jslinux]: https://bellard.org/jslinux
-[tinyemu-readme]: https://bellard.org/tinyemu/readme.txt
-
-## Installing
-
-The easiest way to install TinyEMU is through [Homebrew][]. There is a formula for TinyEMU in [my Homebrew tap][tap].
-
-[homebrew]: https://brew.sh
-[tap]: https://github.com/fernandotcl/homebrew-fernandotcl
-
-If you're compiling from source, you'll need:
-
-- [OpenSSL][] (optional)
-- [SDL 2.0][sdl] (optional)
-
-[openssl]: https://www.openssl.org
-[sdl]: https://www.libsdl.org
-
-Make sure to disable `CONFIG_INT128` for 32-bit hosts.
+[gdtemu project]: https://github.com/lihop/gdtemu/
 
 ## Credits
 
-TinyEMU was created by [Fabrice Bellard][fabrice]. This port is maintained by [Fernando Tarlá Cardoso Lemos][fernando].
+TinyEMU was created by [Fabrice Bellard][fabrice].
+
+Modifications were made by [Fernando Tarlá Cardoso Lemos][fernando] with contributions from [Jim Huang][jim].
+
+This fork is maintanied by [Leroy Hopson][leroy].
 
 [fabrice]: https://bellard.org
 [fernando]: mailto:fernandotcl@gmail.com
+[jim]: https://github.com/jserv
+[leroy]: mailto:tinyemu@leroy.geek.nz
 
 ## License
 
-Unless otherwise specified in individual files, TinyEMU is available under the MIT license.
+Unless otherwise specified in individual files, TinyEMU is available under the MIT license (see [LICENSE]).
 
-The SLIRP library has its own license (two-clause BSD license).
+The SLIRP library has its own license (BSD 3-Clause).
+
+[LICENSE]: /LICENSE

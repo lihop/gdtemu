@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for Windows using MinGW compiler and with SLiRP disabled (i.e. CONFIG_SLIRP=n).
 
 ### Changed
+- Renamed to libTinyEMU (libtemu).
 - Exposed slirp functions:
   - slirp_write_packet()
   - slirp_select_fill1()
