@@ -3,6 +3,7 @@
  *
  * VM definitions
  * 
+ * Copyright (c) 2022 Leroy Hopson
  * Copyright (c) 2016-2017 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -94,6 +95,7 @@ typedef struct {
     char *display_device; /* NULL means no display */
     int width, height; /* graphic width & height */
     CharacterDevice *console;
+    RNGDevice *rng;
     VMDriveEntry tab_drive[MAX_DRIVE_DEVICE];
     int drive_count;
     VMFSEntry tab_fs[MAX_FS_DEVICE];
@@ -118,6 +120,9 @@ typedef struct VirtMachine {
     CharacterDevice *console;
     /* graphics */
     FBDevice *fb_dev;
+    /* entropy */
+    VIRTIODevice *rng_dev;
+    RNGDevice *rng;
 } VirtMachine;
 
 struct VirtMachineClass {

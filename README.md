@@ -25,3 +25,6 @@ These drivers must be enabled in order for the console and block devices to work
 Network device support is confirmed with kernel version 4.19.245.
 For network device support the following must be enabled:
 1. Device Drivers -> Network device support -> Network core driver support [\*] -> Virtio network driver <\*>
+
+#### RNG Device
+1. Device Drivers -> Character devices -> Hardware Random Number Generator Core support <\*> -> VirtIO Random Number Generator support <\*>

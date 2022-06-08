@@ -2081,6 +2081,11 @@ static VirtMachine *pc_machine_init(const VirtMachineParams *p)
         /* virtio console */
         s->common.console_dev = virtio_console_init(vbus, p->console);
     }
+
+    if (p->rng) {
+        /* virtio entropy source */
+        s->common.rng_dev = virtio_rng_init(vbus, p->rng);
+    }
     
     /* block devices */
     for(i = 0; i < p->drive_count;) {

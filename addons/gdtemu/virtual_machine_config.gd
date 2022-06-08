@@ -23,6 +23,7 @@ export(int) var memory_size := 256
 export(String, FILE) var bios := ""
 export(String, FILE) var kernel := ""
 export(String) var cmdline := ""
+export(bool) var rng_device := true
 export(Array, Resource) var block_devices := [] setget set_block_devices
 export(Array, Resource) var net_devices := [] setget set_net_devices
 

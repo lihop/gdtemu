@@ -21,5 +21,6 @@ memory_size = 256
 bios = "res://addons/gdtemu/native/bin/bbl64.bin"
 kernel = "res://examples/riscv64/images/Image"
 cmdline = "loglevel=4 console=hvc0 root=/dev/vda rw"
+rng_device = true
 block_devices = [ SubResource( 1 ) ]
 net_devices = [ SubResource( 2 ) ]

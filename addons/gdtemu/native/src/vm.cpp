@@ -133,6 +133,11 @@ static void _console_write(void *opaque, const uint8_t *buf, int len) {
   vm->emit_signal("console_wrote", data);
 }
 
+static void rng_random_bytes(uint8_t *buf, int len) {
+  for (int i = 0; i < len; i++)
+    buf[i] = rand() % 256;
+}
+
 static int64_t bf_get_sector_count(BlockDevice *bs) {
   VM::BlockDeviceFile *bf = static_cast<VM::BlockDeviceFile *>(bs->opaque);
   return bf->nb_sectors;
@@ -368,6 +373,13 @@ godot_error VM::start(Resource *config) {
   console->read_data = _console_read;
   console->write_data = _console_write;
   params->console = console;
+
+  if (config->get("rng_device")) {
+    RNGDevice *rng = new RNGDevice();
+    rng->opaque = this;
+    rng->read_data = rng_random_bytes;
+    params->rng = rng;
+  }
 
   vm = virt_machine_init(params);
   if (!vm) {

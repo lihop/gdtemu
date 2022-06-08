@@ -1,10 +1,9 @@
 /*
- * SDPX-FileCopyrightText: 2016 Fabrice Bellard
- * SDPX-FileCopyrightText: 2022 Leroy Hopson
  * SPDX-License-Identifier: MIT
  *
  * VIRTIO driver
  * 
+ * Copyright (c) 2022 Leroy Hopson
  * Copyright (c) 2016 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -126,6 +125,15 @@ BOOL virtio_console_can_write_data(VIRTIODevice *s);
 int virtio_console_get_write_len(VIRTIODevice *s);
 int virtio_console_write_data(VIRTIODevice *s, const uint8_t *buf, int buf_len);
 void virtio_console_resize_event(VIRTIODevice *s, int width, int height);
+
+/* entropy source */
+
+typedef struct {
+    void *opaque;
+    void (*read_data)(uint8_t *buf, int len);
+} RNGDevice;
+
+VIRTIODevice *virtio_rng_init(VIRTIOBusDef *bus, RNGDevice *rng);
 
 /* input device */
 

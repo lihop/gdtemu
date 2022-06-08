@@ -1,9 +1,9 @@
 /*
- * SPDX-FileCopyrightText: 2016 Fabrice Bellard
  * SPDX-License-Identifier: MIT
  *
  * VIRTIO driver
  * 
+ * Copyright (c) 2022 Leroy Hopson
  * Copyright (c) 2016 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -243,6 +243,10 @@ static void virtio_init(VIRTIODevice *s, VIRTIOBusDef *bus,
         case 3:
             pci_device_id = 0x1003; /* console */
             class_id = 0x0780;
+            break;
+        case 4:
+            pci_device_id = 0x1005; /* rng */
+            class_id = 0xff00;
             break;
         case 9:
             pci_device_id = 0x1040 + device_id; /* use new device ID */
@@ -1359,6 +1363,42 @@ VIRTIODevice *virtio_console_init(VIRTIOBusDef *bus, CharacterDevice *cs)
     s->common.queue[0].manual_recv = TRUE;
     
     s->cs = cs;
+    return (VIRTIODevice *)s;
+}
+
+/*********************************************************************/
+/* entropy source */
+
+typedef struct VIRTIORNGDevice {
+    VIRTIODevice common;
+    RNGDevice *rng;
+} VIRTIORNGDevice;
+
+static int virtio_rng_recv_request(VIRTIODevice *s, int queue_idx,
+                                      int desc_idx, int read_size,
+                                      int write_size)
+{
+    VIRTIORNGDevice *s1 = (VIRTIORNGDevice *)s;
+    RNGDevice *rng = s1->rng;
+    uint8_t *buf = malloc(write_size);
+
+    rng->read_data(buf, write_size);
+    memcpy_to_queue(s, queue_idx, desc_idx, 0, buf, write_size);
+    virtio_consume_desc(s, queue_idx, desc_idx, write_size);
+
+    free(buf);
+    return 0;
+}
+
+VIRTIODevice *virtio_rng_init(VIRTIOBusDef *bus, RNGDevice *rng)
+{
+    VIRTIORNGDevice *s;
+
+    s = mallocz(sizeof(*s));
+    virtio_init(&s->common, bus, 4, 0, virtio_rng_recv_request);
+    s->common.device_features = 0;
+    s->rng = rng;
+
     return (VIRTIODevice *)s;
 }
 

@@ -46,3 +46,10 @@ func test_riscv64_architecture():
 	vm.console_read("uname -a\n".to_utf8())
 	yield(yield_to(vm, "console_wrote", 20), YIELD)
 	assert_string_contains(terminal.copy_all(), "riscv64 GNU/Linux")
+
+
+func test_riscv64_virtio_rng_device():
+	yield(start(), "completed")
+	vm.console_read("cat /sys/devices/virtual/misc/hw_random/rng_current\n".to_utf8())
+	yield(yield_to(vm, "console_wrote", 20), YIELD)
+	assert_string_contains(terminal.copy_all(), "virtio_rng.0")

@@ -3,6 +3,7 @@
  *
  * RISCV machine
  * 
+ * Copyright (c) 2022 Leroy Hopson
  * Copyright (c) 2019 Fernando Lemos
  * Copyright (c) 2016-2017 Fabrice Bellard
  *
@@ -1029,6 +1030,15 @@ static VirtMachine *riscv_machine_init(const VirtMachineParams *p)
             vm_error("unsupported input device: %s\n", p->input_device);
             exit(1);
         }
+    }
+
+    /* virtio entropy source */
+    if (p->rng) {
+        vbus->irq = &s->plic_irq[irq_num];
+        s->common.rng_dev = virtio_rng_init(vbus, p->rng);
+        vbus->addr += VIRTIO_SIZE;
+        irq_num++;
+        s->virtio_count++;
     }
     
     if (!p->files[VM_FILE_BIOS].buf) {
