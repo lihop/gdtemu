@@ -7,7 +7,7 @@ on:
 
 env:
   TARGET_GODOT_VERSION: v3.4.4-stable
-  GODOT_CPP_CACHE_VERSION: 1 # Manually invalidate cache by incrementing this number.
+  CACHE_VERSION: 0 # Manually invalidate cache by incrementing this number.
 
 jobs:
   reuse-compliance-check:
@@ -57,7 +57,7 @@ jobs:
         id: godot-cpp-cache
         with:
           path: addons/gdtemu/native/thirdparty/godot-cpp
-          key: godot-cpp-docker-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-v${{ env.GODOT_CPP_CACHE_VERSION }}
+          key: godot-cpp-docker-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-${{ env.CACHE_VERSION }}
       - run: docker-compose pull
         working-directory: addons/gdtemu/native
       - uses: satackey/action-docker-layer-caching@v0.0.11
@@ -109,7 +109,7 @@ jobs:
         id: godot-cpp-cache
         with:
           path: addons/gdtemu/native/thirdparty/godot-cpp
-          key: godot-cpp-native-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-v${{ env.GODOT_CPP_CACHE_VERSION }}
+          key: godot-cpp-native-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-${{ env.CACHE_VERSION }}
       - if: ${{ matrix.os == 'ubuntu-latest' }}
         name: Install ubuntu build dependencies
         run: sudo apt-get update && sudo apt-get install -y scons gcc-multilib g++-multilib
@@ -176,7 +176,7 @@ jobs:
           path: |
             addons
             !addons/gdtemu
-          key: ${{ hashFiles('**/plug.gd') }}
+          key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
       - name: Install plugins
         if: steps.cache-plugins.outputs.cache-hit != 'true'
         shell: bash
@@ -202,22 +202,33 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Generate buildroot hash
+        id: buildroot-hash
+        run: >-
+          echo "::set-output name=hash::buildroot-${{ matrix.target }}-${{ format('{0}-{1}-{2}',
+            hashFiles(format('addons/gdtemu/board/{0}/*', matrix.target)),
+            hashFiles(format('examples/{0}/buildroot/.config', matrix.target)),
+            hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)) || '0')
+          }}-${{ env.CACHE_VERSION }}"
       - name: Cache buildroot
         id: cache-buildroot
         uses: actions/cache@v3
         with:
           path: |
-            ~/.buildroot-ccache
             examples/**/images
             examples/**/buildroot/build
             examples/**/buildroot/host
             examples/**/buildroot/staging
-          key: >-
-            buildroot-${{ matrix.target }}-${{ format('{0}-{1}-{2}',
-              hashFiles(format('thirdparty/buildroot/board/gdtemu/{0}/*', matrix.target)),
-              hashFiles(format('examples/{0}/buildroot/.config', matrix.target)),
-              hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)) || '0')
-            }}
+          key: ${{ steps.buildroot-hash.outputs.hash }}
+      - name: Cache buildroot ccache
+        if: steps.cache-buildroot.outputs.cache-hit != 'true'
+        uses: actions/cache@v3
+        with:
+          path: ~/.buildroot-ccache
+          key: ccache-${{ steps.buildroot-hash.outputs.hash }}
+          restore-keys: |
+            ccache-buildroot-${{ matrix.target }}-
+            ccache-buildroot-
       - run: sudo apt-get install -y libelf-dev && make
         if: steps.cache-buildroot.outputs.cache-hit != 'true'
         working-directory: examples/${{ matrix.target }}/buildroot
@@ -257,7 +268,7 @@ jobs:
           path: |
             addons
             !addons/gdtemu
-          key: ${{ hashFiles('**/plug.gd') }}
+          key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
       - name: Install plugins
         if: steps.cache-plugins.outputs.cache-hit != 'true'
         shell: bash
