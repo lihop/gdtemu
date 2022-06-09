@@ -4,15 +4,12 @@ const VirtualMachine := preload("res://addons/gdtemu/virtual_machine.gd")
 const VirtualMachineConfig := preload("res://addons/gdtemu/virtual_machine_config.gd")
 
 var vm: VirtualMachine
+var scene: Node
+var terminal: Control
 
 
 func before_each():
-	vm = VirtualMachine.new()
-
-
-func after_each():
-	if is_instance_valid(vm):
-		vm.free()
+	vm = autofree(VirtualMachine.new())
 
 
 # warning-ignore:shadowed_variable
