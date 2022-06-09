@@ -174,7 +174,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            addons
+            addons/*
             !addons/gdtemu
           key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
       - name: Install plugins
@@ -266,7 +266,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            addons
+            addons/*
             !addons/gdtemu
           key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
       - name: Install plugins
