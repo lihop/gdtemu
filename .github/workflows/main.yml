@@ -165,7 +165,7 @@ jobs:
         with:
           submodules: recursive
       - name: Setup Godot
-        uses: lihop/setup-godot@v1.0.0
+        uses: lihop/setup-godot@v1.0.1
         with:
           version: ${{ matrix.godot_version }}
           bits: ${{ matrix.bits }}
@@ -257,7 +257,7 @@ jobs:
         with:
           submodules: recursive
       - name: Setup Godot
-        uses: lihop/setup-godot@v1.0.0
+        uses: lihop/setup-godot@v1.0.1
         with:
           version: ${{ env.TARGET_GODOT_VERSION }} 
           export-templates: true
@@ -317,7 +317,7 @@ jobs:
             bits: 32
     steps:
       - name: Setup Godot
-        uses: lihop/setup-godot@v1.0.0
+        uses: lihop/setup-godot@v1.0.1
         with:
           bits: ${{ matrix.bits }}
       - name: Download demo
