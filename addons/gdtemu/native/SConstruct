@@ -278,6 +278,7 @@ sources = []
 
 sources.append('src/temu.c')
 sources.append('src/vm.cpp')
+sources.append("src/frame_buffer.cpp")
 sources.append('src/libgdtemu.cpp')
 
 if env['platform'] == 'linux':

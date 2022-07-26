@@ -7,6 +7,8 @@
 #include <File.hpp>
 #include <Godot.hpp>
 #include <Resource.hpp>
+#include <Viewport.hpp>
+
 #include <set>
 
 extern "C" {
@@ -51,9 +53,10 @@ public:
   void console_resize(int width, int height);
 
   bool thread_running = false;
+  VirtMachine *vm;
+  Viewport *frame_buffer;
 
 private:
-  VirtMachine *vm;
 #ifndef __WIN32
   pthread_t thread;
 #endif

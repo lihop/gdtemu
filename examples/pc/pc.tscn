@@ -7,14 +7,21 @@
 [node name="Console" instance=ExtResource( 2 )]
 note = "pc | user: root | password: root | Try running `ssh root@127.0.0.1 -p 5077` on the host to connect to the VM"
 
-[node name="VirtualMachine" type="Node" parent="." index="1"]
+[node name="VirtualMachine" type="Node" parent="." index="0"]
 script = ExtResource( 1 )
 config = ExtResource( 3 )
+
+[node name="Terminal" parent="_/__" index="0"]
+margin_right = 1010.0
+
+[node name="Screen" parent="_/__" index="1"]
+visible = false
+margin_left = 370.0
 
 [connection signal="paused" from="." to="VirtualMachine" method="set" binds= [ "paused", true ]]
 [connection signal="powered_off" from="." to="VirtualMachine" method="stop"]
 [connection signal="powered_on" from="." to="VirtualMachine" method="start"]
 [connection signal="unpaused" from="." to="VirtualMachine" method="set" binds= [ "paused", false ]]
-[connection signal="data_sent" from="_/Terminal" to="VirtualMachine" method="console_read"]
-[connection signal="size_changed" from="_/Terminal" to="VirtualMachine" method="console_resize"]
-[connection signal="console_wrote" from="VirtualMachine" to="_/Terminal" method="write"]
+[connection signal="console_wrote" from="VirtualMachine" to="_/__/Terminal" method="write"]
+[connection signal="data_sent" from="_/__/Terminal" to="VirtualMachine" method="console_read"]
+[connection signal="size_changed" from="_/__/Terminal" to="VirtualMachine" method="console_resize"]

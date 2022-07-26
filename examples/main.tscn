@@ -1,62 +1,48 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://examples/riscv32/riscv32.tscn" type="PackedScene" id=1]
 [ext_resource path="res://examples/main.gd" type="Script" id=2]
 [ext_resource path="res://examples/pc/pc.tscn" type="PackedScene" id=3]
 [ext_resource path="res://examples/riscv64/riscv64.tscn" type="PackedScene" id=4]
 
-[sub_resource type="StyleBoxFlat" id=1]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color( 0, 0, 0, 1 )
-
-[node name="Example" type="Control"]
+[node name="Example" type="TabContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+tab_align = 0
 script = ExtResource( 2 )
 
-[node name="_" type="VBoxContainer" parent="."]
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="_" type="HBoxContainer" parent="_"]
-margin_right = 1024.0
-margin_bottom = 298.0
+[node name="PC" parent="." groups=["console"] instance=ExtResource( 3 )]
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
 size_flags_vertical = 3
+autostart = false
+note = "user: root | password: root | Try running `ssh root@127.0.0.1 -p 5077` on the host to connect to the VM"
 
-[node name="RISCV32" parent="_/_" groups=["console"] instance=ExtResource( 1 )]
+[node name="RISCV32" parent="." groups=["console"] instance=ExtResource( 1 )]
+visible = false
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_right = 510.0
-margin_bottom = 298.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = 223.0
+margin_bottom = 830.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-custom_styles/panel = SubResource( 1 )
 autostart = false
+note = "user: root"
 
-[node name="RISCV64" parent="_/_" groups=["console"] instance=ExtResource( 4 )]
+[node name="RISCV64" parent="." groups=["console"] instance=ExtResource( 4 )]
+visible = false
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_left = 514.0
-margin_right = 1024.0
-margin_bottom = 298.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = 1030.0
+margin_bottom = 830.0
 size_flags_horizontal = 3
-custom_styles/panel = SubResource( 1 )
 autostart = false
+note = "user: root | pass: root | ssh root@127.0.0.1 -p 5078"
 
-[node name="PC" parent="_" groups=["console"] instance=ExtResource( 3 )]
-anchor_right = 0.0
-anchor_bottom = 0.0
-margin_top = 302.0
-margin_right = 1024.0
-margin_bottom = 600.0
-size_flags_vertical = 3
-custom_styles/panel = SubResource( 1 )
-autostart = false
-
-[connection signal="focus_entered" from="_/_/RISCV32" to="." method="_on_Console_focus_entered" binds= [ "RISCV32" ]]
-[connection signal="focus_entered" from="_/_/RISCV64" to="." method="_on_Console_focus_entered" binds= [ "RISCV64" ]]
-[connection signal="focus_entered" from="_/PC" to="." method="_on_Console_focus_entered" binds= [ "PC" ]]
+[connection signal="tab_changed" from="." to="." method="_on_tab_changed"]

@@ -36,6 +36,8 @@ void VM::_register_methods() {
 
   register_method("console_read", &VM::console_read);
   register_method("console_resize", &VM::console_resize);
+
+  register_property<VM, Viewport *>("frame_buffer", &VM::frame_buffer, nullptr);
 }
 
 #ifndef __WIN32
@@ -119,7 +121,7 @@ static EthernetDevice *slirp_open(void *opaque) {
 VM::VM() {}
 VM::~VM() {}
 
-void VM::_init() {}
+void VM::_init() { frame_buffer = nullptr; }
 
 static int _console_read(void *opaque, uint8_t *buf, int len) { return 0; }
 
@@ -367,6 +369,12 @@ godot_error VM::start(Resource *config) {
 #endif
 
   params->rtc_real_time = TRUE;
+
+  if (frame_buffer != nullptr) {
+    params->display_device = strdup("simplefb");
+    params->width = frame_buffer->get_size().x;
+    params->height = frame_buffer->get_size().y;
+  }
 
   CharacterDevice *console = new CharacterDevice();
   console->opaque = this;

@@ -1,20 +1,35 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://addons/gdtemu/virtual_machine.gd" type="Script" id=1]
 [ext_resource path="res://examples/riscv32/riscv32_config.tres" type="Resource" id=2]
 [ext_resource path="res://examples/console.tscn" type="PackedScene" id=3]
+[ext_resource path="res://addons/gdtemu/device/frame_buffer.gd" type="Script" id=4]
+
+[sub_resource type="ViewportTexture" id=1]
+viewport_path = NodePath("VirtualMachine/FrameBuffer")
 
 [node name="Console" instance=ExtResource( 3 )]
 note = "riscv32 | user: root"
 
-[node name="VirtualMachine" type="Node" parent="." index="1"]
+[node name="VirtualMachine" type="Node" parent="." index="0"]
 script = ExtResource( 1 )
 config = ExtResource( 2 )
+
+[node name="FrameBuffer" type="Viewport" parent="VirtualMachine" index="0"]
+size = Vector2( 640, 480 )
+script = ExtResource( 4 )
+
+[node name="Terminal" parent="_/__" index="0"]
+margin_right = 366.0
+
+[node name="Screen" parent="_/__" index="1"]
+margin_left = 370.0
+texture = SubResource( 1 )
 
 [connection signal="paused" from="." to="VirtualMachine" method="set" binds= [ "paused", true ]]
 [connection signal="powered_off" from="." to="VirtualMachine" method="stop"]
 [connection signal="powered_on" from="." to="VirtualMachine" method="start"]
 [connection signal="unpaused" from="." to="VirtualMachine" method="set" binds= [ "paused", false ]]
-[connection signal="data_sent" from="_/Terminal" to="VirtualMachine" method="console_read"]
-[connection signal="size_changed" from="_/Terminal" to="VirtualMachine" method="console_resize"]
-[connection signal="console_wrote" from="VirtualMachine" to="_/Terminal" method="write"]
+[connection signal="console_wrote" from="VirtualMachine" to="_/__/Terminal" method="write"]
+[connection signal="data_sent" from="_/__/Terminal" to="VirtualMachine" method="console_read"]
+[connection signal="size_changed" from="_/__/Terminal" to="VirtualMachine" method="console_resize"]

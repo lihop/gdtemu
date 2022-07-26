@@ -13,8 +13,8 @@ func start():
 	scene = preload("res://examples/riscv32/riscv32.tscn").instance()
 	add_child_autoqfree(scene)
 	vm = scene.get_node("VirtualMachine")
-	terminal = scene.get_node("_/Terminal")
-	scene.get_node("_/_/PowerButton").pressed = true
+	terminal = scene.find_node("Terminal")
+	scene.find_node("PowerButton").pressed = true
 	while not "buildroot login: " in terminal.copy_all():
 		yield(yield_to(vm, "console_wrote", 20), YIELD)
 	vm.console_read("root\n".to_utf8())

@@ -39,6 +39,7 @@ var _native_vm: NativeVM
 var _state := STATE_IDLE
 var _console_buffer := PoolByteArray()
 var _buffer_dirty := false
+var _frame_buffer: Viewport = null
 
 
 func set_use_threads(value: bool) -> void:
@@ -59,6 +60,26 @@ func _ready():
 
 
 func start() -> int:
+	for child in get_children():
+		match child.get_class():
+			"FrameBuffer":
+				if _frame_buffer and _frame_buffer != child:
+					push_warning(
+						(
+							"Currently only a single FrameBuffer is supported. %s will be ignored."
+							% child
+						)
+					)
+				else:
+					if config.machine_class == VirtualMachineConfig.MACHINE_CLASS_PC:
+						push_error("FrameBuffer is not supported for PC machine class.")
+					else:
+						_frame_buffer = child
+						if not _frame_buffer.is_connected(
+							"size_changed", self, "_on_fb_size_changed"
+						):
+							_frame_buffer.connect("size_changed", self, "_on_fb_size_changed")
+
 	if is_inside_tree():
 		yield(get_tree(), "idle_frame")
 
@@ -66,6 +87,13 @@ func start() -> int:
 		return ERR_ALREADY_IN_USE
 
 	_native_vm = NativeVM.new()
+	if _frame_buffer:
+		_frame_buffer._fb_native.vm = _native_vm
+
+	if _frame_buffer:
+		if not VisualServer.is_connected("frame_pre_draw", self, "_on_frame_pre_draw"):
+			VisualServer.connect("frame_pre_draw", self, "_on_frame_pre_draw")
+		_native_vm.frame_buffer = _frame_buffer
 
 	var err: int = _native_vm.start(config)
 	if err != OK:
@@ -100,11 +128,17 @@ func set_paused(value: bool) -> void:
 
 
 func stop():
+	if VisualServer.is_connected("frame_pre_draw", self, "_on_frame_pre_draw"):
+		VisualServer.disconnect("frame_pre_draw", self, "_on_frame_pre_draw")
+
 	if _state == STATE_RUNNING or _state == STATE_PAUSED:
 		_state = STATE_STOPPED
 		if use_threads:
 			_native_vm.stop_thread()
 		_native_vm.stop()
+
+	if _frame_buffer and _frame_buffer.is_connected("size_changed", self, "_on_fb_size_changed"):
+		_frame_buffer.disconnect("size_changed", self, "_on_fb_size_changed")
 
 
 func _exit_tree():
@@ -126,3 +160,13 @@ func console_resize(size: Vector2) -> void:
 
 func _on_console_wrote(data: PoolByteArray):
 	call_deferred("emit_signal", "console_wrote", data)
+
+
+func _on_frame_pre_draw():
+	if _frame_buffer:
+		_frame_buffer.refresh()
+
+
+func _on_fb_size_changed():
+	if not _state in [STATE_IDLE, STATE_STOPPED]:
+		push_warning("New FrameBuffer size will not take effect until VirtualMachine is restarted.")

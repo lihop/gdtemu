@@ -187,6 +187,9 @@ jobs:
           platform: ${{ matrix.platform }}
           bits: ${{ matrix.bits }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Import resources
+        shell: bash
+        run: godot --editor addons/gut/.cli_add/__rebuilder_scene.tscn
       - name: Run unit and integration tests
         shell: bash
         run: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json
