@@ -4,6 +4,7 @@
   name = "buildroot-env";
   targetPkgs = pkgs: (with pkgs; [
     bc
+    binutils
     cpio
     file
     flock
