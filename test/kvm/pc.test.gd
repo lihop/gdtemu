@@ -38,7 +38,7 @@ func test_pc_example():
 	var scene := preload("res://examples/pc/pc.tscn").instance()
 	add_child_autoqfree(scene)
 	var vm = scene.get_node("VirtualMachine")
-	var terminal = scene.get_node("_/Terminal")
+	var terminal = scene.find_node("Terminal")
 	scene.get_node("_/_/PowerButton").pressed = true
 	while not "buildroot login: " in terminal.copy_all():
 		yield(yield_to(vm, "console_wrote", 20), YIELD)
