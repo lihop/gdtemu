@@ -4,15 +4,17 @@ tool
 extends Resource
 
 enum Driver {
-	USER,
+	RAW,  # Receive/transmit raw ethernet data.
+	USER,  # Uses SLiRP to piggyback of hosts internet connection. Linux/macOS only.
 }
+const DRIVER_RAW := Driver.RAW
 const DRIVER_USER := Driver.USER
 
-export(Driver) var driver := DRIVER_USER
+export(Driver) var driver := DRIVER_RAW
 export(PoolStringArray) var port_forwards := PoolStringArray()
 
 
-func _init(p_driver := DRIVER_USER, p_port_forwards := PoolStringArray()):
+func _init(p_driver := DRIVER_RAW, p_port_forwards := PoolStringArray()):
 	driver = p_driver
 	port_forwards = p_port_forwards
 

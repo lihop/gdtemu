@@ -24,6 +24,8 @@ using namespace godot;
 void VM::_register_methods() {
   register_signal<VM>("console_wrote", "data",
                       GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY);
+  register_signal<VM>("received", "data", GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY,
+                      "interface", GODOT_VARIANT_TYPE_INT);
 
   register_method("_init", &VM::_init);
 
@@ -36,6 +38,7 @@ void VM::_register_methods() {
 
   register_method("console_read", &VM::console_read);
   register_method("console_resize", &VM::console_resize);
+  register_method("transmit", &VM::transmit);
 
   register_property<VM, Viewport *>("frame_buffer", &VM::frame_buffer, nullptr);
 }
@@ -82,6 +85,64 @@ static int load_file(uint8_t **pbuf, String filename) {
 
   *pbuf = buf;
   return len;
+}
+
+typedef struct {
+  int index;
+  VM *vm;
+} RawState;
+
+void raw_write_packet(EthernetDevice *net, const uint8_t *buf, int len) {
+  RawState *opaque = static_cast<RawState *>(net->opaque);
+  VM *vm = static_cast<VM *>(opaque->vm);
+
+  PoolByteArray data;
+  data.resize(len);
+  memcpy(data.write().ptr(), buf, len);
+
+  vm->emit_signal("received", data, opaque->index);
+}
+
+void raw_select_fill(EthernetDevice *net, int *pfd_max, fd_set *rfds,
+                     fd_set *wfds, fd_set *efds, int *pdelay) {}
+
+void raw_select_poll(EthernetDevice *net, fd_set *rfds, fd_set *wfds,
+                     fd_set *efds, int select_ret) {
+  RawState *s = static_cast<RawState *>(net->opaque);
+  PoolByteArray buffer = s->vm->net_buffers[s->index];
+  int len = buffer.size();
+
+  if (len > 0) {
+    net->device_write_packet(net, buffer.read().ptr(), len);
+    s->vm->net_buffers[s->index] = PoolByteArray();
+  }
+}
+
+void VM::transmit(PoolByteArray data, int iface) {
+  net_buffers[iface].append_array(data);
+}
+
+static EthernetDevice *raw_open(void *opaque, int index) {
+  VM *vm = static_cast<VM *>(opaque);
+
+  EthernetDevice *net;
+  net = (EthernetDevice *)mallocz(sizeof(*net));
+
+  RawState *net_opaque = new RawState({.index = index, .vm = vm});
+
+  // TODO: Make MAC address configurable.
+  net->mac_addr[0] = 0x0E;
+  net->mac_addr[1] = 0x00;
+  net->mac_addr[2] = 0x00;
+  net->mac_addr[3] = 0x00;
+  net->mac_addr[4] = 0x00;
+  net->mac_addr[5] = 0x01;
+  net->opaque = net_opaque;
+  net->write_packet = raw_write_packet;
+  net->select_fill = raw_select_fill;
+  net->select_poll = raw_select_poll;
+
+  return net;
 }
 
 #ifndef __WIN32
@@ -333,7 +394,6 @@ godot_error VM::start(Resource *config) {
     params->tab_drive[i].block_dev = drive;
   }
 
-#ifndef __WIN32
   Array net_devices = config->get("net_devices");
   params->eth_count = net_devices.size();
   for (int i = 0; i < net_devices.size(); i++) {
@@ -341,7 +401,12 @@ godot_error VM::start(Resource *config) {
     Resource *device = net_devices[i];
     int driver = device->get("driver");
     switch (driver) {
-    case 0:
+    case 0: // RAW
+      params->tab_eth[i].net = raw_open(this, i);
+      net_buffers[i] = PoolByteArray();
+      break;
+#ifndef __WIN32 // SLiRP not supported on Windows.
+    case 1:     // USER
       params->tab_eth[i].net = slirp_open(this);
       Array port_forwards = device->call("_get_port_forwards_parsed");
       for (int i = 0; i < port_forwards.size(); i++) {
@@ -364,9 +429,9 @@ godot_error VM::start(Resource *config) {
                           host_port, in_addr{guest_addr.s_addr}, guest_port);
       }
       break;
+#endif
     }
   }
-#endif
 
   params->rtc_real_time = TRUE;
 

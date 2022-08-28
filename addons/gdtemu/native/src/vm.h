@@ -9,6 +9,7 @@
 #include <Resource.hpp>
 #include <Viewport.hpp>
 
+#include <map>
 #include <set>
 
 extern "C" {
@@ -51,10 +52,12 @@ public:
 
   godot_error console_read(PoolByteArray data);
   void console_resize(int width, int height);
+  void transmit(PoolByteArray data, int iface);
 
   bool thread_running = false;
   VirtMachine *vm;
   Viewport *frame_buffer;
+  std::map<int, PoolByteArray> net_buffers;
 
 private:
 #ifndef __WIN32

@@ -6,7 +6,10 @@ extends Node
 const NativeVM := preload("./native/vm.gdns")
 const VirtualMachineConfig := preload("./virtual_machine_config.gd")
 
+const _NetDevice := preload("./device/net_device.gd")
+
 signal console_wrote(data)
+signal transmitted(data, interface)
 
 enum State {
 	IDLE,
@@ -103,9 +106,11 @@ func start() -> int:
 	_state = STATE_RUNNING
 	if use_threads:
 		_native_vm.connect("console_wrote", self, "_on_console_wrote", [], CONNECT_DEFERRED)
+		_native_vm.connect("received", self, "_on_received", [], CONNECT_DEFERRED)
 		return _native_vm.run_thread(max_sleep_time_ms, max_exec_cycles)
 	else:
 		_native_vm.connect("console_wrote", self, "_on_console_wrote")
+		_native_vm.connect("received", self, "_on_received")
 
 	return OK
 
@@ -113,6 +118,18 @@ func start() -> int:
 func _process(_delta: float) -> void:
 	if not use_threads and _native_vm and _state == STATE_RUNNING:
 		_native_vm.run(max_sleep_time_ms, max_exec_cycles)
+
+
+func receive(data: PoolByteArray, interface := 0) -> int:
+	if not config.net_devices or config.net_devices.size() < interface + 1:
+		push_error("VirtualMachine has no net_device at index %d." % interface)
+		return ERR_PARAMETER_RANGE_ERROR
+
+	if _native_vm:
+		_native_vm.call_deferred("transmit", data, interface)
+		return OK
+	else:
+		return FAILED
 
 
 func set_paused(value: bool) -> void:
@@ -160,6 +177,10 @@ func console_resize(size: Vector2) -> void:
 
 func _on_console_wrote(data: PoolByteArray):
 	call_deferred("emit_signal", "console_wrote", data)
+
+
+func _on_received(data: PoolByteArray, interface: int):
+	call_deferred("emit_signal", "transmitted", data, interface)
 
 
 func _on_frame_pre_draw():

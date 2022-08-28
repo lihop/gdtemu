@@ -11,7 +11,7 @@ mode = 2
 
 [sub_resource type="Resource" id=2]
 script = ExtResource( 3 )
-driver = 0
+driver = 1
 port_forwards = PoolStringArray( "tcp:127.0.0.1:5077-0.0.0.0:22" )
 
 [resource]

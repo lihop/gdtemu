@@ -7,7 +7,7 @@ const BlockDevice := preload("./device/block_device.gd")
 const NetDevice := preload("./device/net_device.gd")
 
 const MAX_BLOCK_DEVICES := 4
-const MAX_NET_DEVICES := 1
+const MAX_NET_DEVICES := 2
 
 enum MachineClass {
 	PC = 1,
