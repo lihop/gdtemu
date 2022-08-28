@@ -98,10 +98,10 @@ struct EthernetDevice {
     void (*select_fill)(EthernetDevice *net, int *pfd_max,
                         fd_set *rfds, fd_set *wfds, fd_set *efds,
                         int *pdelay);
+#endif
     void (*select_poll)(EthernetDevice *net, 
                         fd_set *rfds, fd_set *wfds, fd_set *efds,
                         int select_ret);
-#endif
     /* the following is set by the device */
     void *device_opaque;
     BOOL (*device_can_write_packet)(EthernetDevice *net);

@@ -22,7 +22,7 @@ extern "C" {
 
 #include "machine.h"
 #include "temu.h"
-#if defined(CONFIG_SLIRP) && !defined(__WIN32)
+#if defined(CONFIG_SLIRP) && !defined(__WIN32) && !defined(EMSCRIPTEN)
 #include "slirp/libslirp.h"
 #endif
 }
@@ -60,12 +60,12 @@ public:
   std::map<int, PoolByteArray> net_buffers;
 
 private:
-#ifndef __WIN32
+#if !defined(__WIN32) && !defined(EMSCRIPTEN)
   pthread_t thread;
 #endif
 
 public:
-#ifndef __WIN32
+#if !defined(__WIN32) && !defined(EMSCRIPTEN)
   static std::set<pthread_t> threads;
   static pthread_t main_thread;
   Slirp *slirp_state;

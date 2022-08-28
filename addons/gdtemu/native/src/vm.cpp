@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: 2016-2018 Fabrice Bellard
 // SPDX-License-Identifier: MIT
 
-#ifndef __WIN32
+#if !defined(__WIN32) and !defined(EMSCRIPTEN)
 #include <pthread.h>
 #include <signal.h>
 #include <sys/time.h>
@@ -43,7 +43,7 @@ void VM::_register_methods() {
   register_property<VM, Viewport *>("frame_buffer", &VM::frame_buffer, nullptr);
 }
 
-#ifndef __WIN32
+#if !defined(__WIN32) && !defined(EMSCRIPTEN)
 std::set<pthread_t> VM::threads = {};
 pthread_t VM::main_thread = pthread_self();
 
@@ -103,9 +103,6 @@ void raw_write_packet(EthernetDevice *net, const uint8_t *buf, int len) {
   vm->emit_signal("received", data, opaque->index);
 }
 
-void raw_select_fill(EthernetDevice *net, int *pfd_max, fd_set *rfds,
-                     fd_set *wfds, fd_set *efds, int *pdelay) {}
-
 void raw_select_poll(EthernetDevice *net, fd_set *rfds, fd_set *wfds,
                      fd_set *efds, int select_ret) {
   RawState *s = static_cast<RawState *>(net->opaque);
@@ -139,13 +136,12 @@ static EthernetDevice *raw_open(void *opaque, int index) {
   net->mac_addr[5] = 0x01;
   net->opaque = net_opaque;
   net->write_packet = raw_write_packet;
-  net->select_fill = raw_select_fill;
   net->select_poll = raw_select_poll;
 
   return net;
 }
 
-#ifndef __WIN32
+#if !defined(__WIN32) && !defined(EMSCRIPTEN)
 static EthernetDevice *slirp_open(void *opaque) {
   VM *vm = static_cast<VM *>(opaque);
 
@@ -410,7 +406,7 @@ godot_error VM::start(Resource *config) {
       String name = OS::get_singleton()->get_name();
       if (name == String("Windows") || name == String("HTML5"))
         continue; // SLiRP not supported on Windows or HTML5.
-#ifndef __WIN32
+#if !defined(__WIN32) && !defined(EMSCRIPTEN) // SLiRP not supported on Windows or HTML5.
       params->tab_eth[i].net = slirp_open(this);
       Array port_forwards = device->call("_get_port_forwards_parsed");
       for (int i = 0; i < port_forwards.size(); i++) {
@@ -484,13 +480,16 @@ void VM::run(int max_sleep_time_ms = MAX_SLEEP_TIME,
   FD_ZERO(&efds);
   fd_max = -1;
 
-  if (vm->net) {
+#if !defined(__WIN32) && !defined(EMSCRIPTEN)
+  if (vm->net && vm->net->select_fill != NULL) {
     vm->net->select_fill(vm->net, &fd_max, &rfds, &wfds, &efds, &delay);
   }
+#endif
 
   tv.tv_sec = delay / 1000;
   tv.tv_usec = (delay % 1000) * 1000;
   ret = select(fd_max + 1, &rfds, &wfds, &efds, &tv);
+
   if (vm->net) {
     vm->net->select_poll(vm->net, &rfds, &wfds, &efds, ret);
   }
@@ -512,7 +511,7 @@ static void *thread_func(void *opaque) {
 
 int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
                    int max_exec_cycles = MAX_EXEC_CYCLES) {
-#ifndef __WIN32
+#if !defined(__WIN32) and !defined(EMSCRIPTEN)
   if (thread_running) {
     return GODOT_ERR_ALREADY_IN_USE;
   }
@@ -541,7 +540,7 @@ int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
 }
 
 void VM::stop_thread() {
-#ifndef __WIN32
+#if !defined(__WIN32) and !defined(EMSCRIPTEN)
   if (!thread_running) {
     return;
   }

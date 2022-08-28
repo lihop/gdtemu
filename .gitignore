@@ -7,6 +7,7 @@
 .venv/
 .vscode/
 addons/*
+docs/demo/
 export/*
 !addons/gd-plug/
 !addons/gdtemu/

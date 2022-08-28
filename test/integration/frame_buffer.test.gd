@@ -33,6 +33,10 @@ func test_warning_if_multiple_frame_buffers():
 
 
 func test_riscv_machines_shows_boot_logo():
+	# Skip on Windows for now.
+	if OS.get_name() == "Windows":
+		return
+
 	for helper in [riscv32, riscv64]:
 		yield(yield_to(helper.start(), "completed", 120), YIELD)
 		var fb = helper.vm.find_node("FrameBuffer")

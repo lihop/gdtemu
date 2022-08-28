@@ -98,7 +98,7 @@ if env['platform'] == 'linux':
 
 # Compile for HTML5.
 elif env['platform'] == 'javascript':
-    env.Append(CPPDEFINES=['__EMSCRIPTEN__'])
+    env.Append(CPPDEFINES=['EMSCRIPTEN'])
 
     env['bits'] = '32'
     env['CC'] = 'emcc'
@@ -219,7 +219,7 @@ sources.append(['thirdparty/TinyEMU/' + f for f in [
     'virtio.c', 'pci.c', 'fs.c', 'cutils.c', 'iomem.c', 'simplefb.c', 'json.c', 'machine.c', 'elf.c',
 ]])
 
-if env['platform'] != 'windows':
+if env['platform'] != 'windows' and env['platform'] != 'javascript':
     env.Append(CPPDEFINES=['CONFIG_SLIRP=y'])
     sources.append(['thirdparty/TinyEMU/slirp/' + f for f in [
         'bootp.c', 'ip_icmp.c', 'mbuf.c', 'slirp.c', 'tcp_output.c', 'cksum.c', 'ip_input.c', 'misc.c',

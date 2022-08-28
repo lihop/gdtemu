@@ -61,3 +61,9 @@ scons use_mingw=yes macos_arch=$(uname -m) generate_bindings=yes target=$target 
 # Build libgdtemu.
 cd ${NATIVE_DIR}
 scons use_mingw=yes macos_arch=$(uname -m) target=$target bits=$bits -j$nproc
+
+# Use Docker to build library for javascript platform.
+if [ -x "$(command -v docker-compose)" ]; then
+	UID_GID="$(id -u):$(id -g)" TARGET=$target docker-compose run godot-cpp-javascript
+	UID_GID="$(id -u):$(id -g)" TARGET=$target docker-compose run gdtemu-javascript
+fi

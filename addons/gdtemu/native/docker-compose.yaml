@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2022 Leroy Hopson <copyright@leroy.geek.nz>
 # SPDX-License-Identifier: MIT
 services:
+
+  # Linux.
   godot-cpp-linux:
     user: ${UID_GID}
     build:
@@ -17,6 +19,26 @@ services:
     volumes:
       - .:/gdtemu
     working_dir: /gdtemu
+
+  # Javascript.
+  godot-cpp-javascript:
+    user: ${UID_GID}
+    build:
+      context: .
+      dockerfile: javascript.Dockerfile
+    volumes:
+      - ./thirdparty/godot-cpp:/godot-cpp
+    working_dir: /godot-cpp
+  gdtemu-javascript:
+    user: ${UID_GID}
+    build:
+      context: .
+      dockerfile: javascript.Dockerfile
+    volumes:
+      - .:/gdtemu
+    working_dir: /gdtemu
+
+  # Windows.
   godot-cpp-windows:
     user: ${UID_GID}
     build:

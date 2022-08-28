@@ -21,6 +21,10 @@ func _ready():
 		$RISCV32/_/_/PowerButton.pressed = true
 		$RISCV64/_/_/PowerButton.pressed = true
 
+	# Only run one machine for HTML5 demo as resources are limited.
+	if OS.get_name() == "HTML5":
+		$RISCV32.queue_free()
+
 	_on_tab_changed(0)
 
 
