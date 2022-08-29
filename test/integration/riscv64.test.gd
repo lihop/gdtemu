@@ -31,6 +31,7 @@ func start():
 
 
 func test_riscv64_bios_and_kernel_only_no_thread():
+	vm = VirtualMachine.new()
 	setup_vm(vm, false)
 	add_child_autofree(vm)
 	vm.start()
@@ -39,6 +40,7 @@ func test_riscv64_bios_and_kernel_only_no_thread():
 
 
 func test_riscv64_bios_and_kernel_only_with_thread():
+	vm = VirtualMachine.new()
 	setup_vm(vm, true)
 	add_child_autofree(vm)
 	vm.start()
