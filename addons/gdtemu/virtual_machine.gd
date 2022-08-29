@@ -63,6 +63,11 @@ func _ready():
 
 
 func start() -> int:
+	# HACK: User net_device driver doesn't work on windows, so always set it to Raw.
+	for net_device in config.net_devices:
+		if OS.get_name() == "Windows":
+			net_device.driver = _NetDevice.DRIVER_RAW
+
 	for child in get_children():
 		match child.get_class():
 			"FrameBuffer":

@@ -11,11 +11,6 @@ static func setup_vm(vm, use_threads := false) -> void:
 	vm.config.cmdline = "loglevel=1 printk.time=0 console=hvc0"
 
 
-func before_each():
-	scene = preload("res://examples/riscv64/riscv64.tscn").instance()
-	add_child_autoqfree(scene)
-
-
 func start():
 	vm = scene.get_node("VirtualMachine")
 	terminal = scene.find_node("Terminal")
@@ -47,6 +42,8 @@ func test_riscv64_bios_and_kernel_only_with_thread():
 
 
 func test_riscv64_architecture():
+	scene = preload("res://examples/riscv64/riscv64.tscn").instance()
+	add_child_autoqfree(scene)
 	yield(start(), "completed")
 	vm.console_read("uname -a\n".to_utf8())
 	yield(yield_to(vm, "console_wrote", 20), YIELD)
@@ -54,6 +51,8 @@ func test_riscv64_architecture():
 
 
 func test_riscv64_virtio_rng_device():
+	scene = preload("res://examples/riscv64/riscv64.tscn").instance()
+	add_child_autoqfree(scene)
 	yield(start(), "completed")
 	vm.console_read("cat /sys/devices/virtual/misc/hw_random/rng_current\n".to_utf8())
 	yield(yield_to(vm, "console_wrote", 20), YIELD)
@@ -61,6 +60,8 @@ func test_riscv64_virtio_rng_device():
 
 
 func test_raw_network_interface():
+	scene = preload("res://examples/riscv64/riscv64.tscn").instance()
+	add_child_autoqfree(scene)
 	var vm = scene.find_node("VirtualMachine")
 	vm.config.net_devices[0].driver = NetDevice.DRIVER_RAW
 	yield(start(), "completed")

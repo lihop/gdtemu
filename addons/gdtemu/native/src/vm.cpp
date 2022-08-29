@@ -400,13 +400,17 @@ godot_error VM::start(Resource *config) {
     EthernetDevice *eth;
     Resource *device = net_devices[i];
     int driver = device->get("driver");
+    net_buffers[i] = PoolByteArray();
     switch (driver) {
     case 0: // RAW
       params->tab_eth[i].net = raw_open(this, i);
-      net_buffers[i] = PoolByteArray();
       break;
-#ifndef __WIN32 // SLiRP not supported on Windows.
-    case 1:     // USER
+    case 1: // USER
+    {
+      String name = OS::get_singleton()->get_name();
+      if (name == String("Windows") || name == String("HTML5"))
+        continue; // SLiRP not supported on Windows or HTML5.
+#ifndef __WIN32
       params->tab_eth[i].net = slirp_open(this);
       Array port_forwards = device->call("_get_port_forwards_parsed");
       for (int i = 0; i < port_forwards.size(); i++) {
@@ -428,8 +432,13 @@ godot_error VM::start(Resource *config) {
         slirp_add_hostfwd(slirp_state, is_udp, in_addr{host_addr.s_addr},
                           host_port, in_addr{guest_addr.s_addr}, guest_port);
       }
-      break;
 #endif
+      break;
+    }
+    default:
+      WARN_PRINT("Ignoring network interface " + String::num_int64(i) +
+                 " as it has an unspported driver.");
+      break;
     }
   }
 
