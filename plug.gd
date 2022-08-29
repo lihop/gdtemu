@@ -17,4 +17,4 @@ func _plugging():
 		"lihop/godot-pixelmatch",
 		{commit = "8ad9ca5f180e6fd810823ebda2cb2e9e9d31c752", include = ["addons/pixelmatch"]}
 	)
-	plug("lihop/godot-xterm-dist", {tag = "v2.2.0", include = ["addons/godot_xterm"]})
+	plug("lihop/godot-xterm-dist", {tag = "v3.0.0-alpha2", include = ["addons/godot_xterm"]})
