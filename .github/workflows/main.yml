@@ -245,7 +245,7 @@ jobs:
           restore-keys: |
             ccache-buildroot-${{ matrix.target }}-
             ccache-buildroot-
-      - run: sudo apt-get install -y libelf-dev && make
+      - run: sudo apt-get update && sudo apt-get install -y libelf-dev && make
         if: steps.cache-buildroot.outputs.cache-hit != 'true'
         working-directory: examples/${{ matrix.target }}/buildroot
       - name: Upload example images
@@ -370,7 +370,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - run: sudo apt-get install libcurl4-openssl-dev libssl-dev zlib1g-dev libsdl2-dev
+      - run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev zlib1g-dev libsdl2-dev
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
       - run: make
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
