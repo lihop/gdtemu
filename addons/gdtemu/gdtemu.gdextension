@@ -1,0 +1,9 @@
+[configuration]
+
+entry_symbol = "gdtemu_library_init"
+
+[libraries]
+linux.debug.x86_64 = "res://addons/gdtemu/native/bin/libgdtemu.linux.template_debug.x86_64.so"
+linux.release.x86_64 = "res://addons/gdtemu/native/bin/libgdtemu.linux.template_release.x86_64.so"
+linux.debug.x86_32 = "res://addons/gdtemu/native/bin/libgdtemu.linux.template_debug.x86_32.so"
+linux.release.x86_32 = "res://addons/gdtemu/native/bin/libgdtemu.linux.template_release.x86_32.so"

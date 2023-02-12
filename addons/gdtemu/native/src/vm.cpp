@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz>
+// SPDX-FileCopyrightText: 2021-2023 Leroy Hopson <copyright@leroy.geek.nz>
 // SPDX-FileCopyrightText: 2019 Fernando Lemos
 // SPDX-FileCopyrightText: 2016-2018 Fabrice Bellard
 // SPDX-License-Identifier: MIT
@@ -9,7 +9,8 @@
 #include <sys/time.h>
 #endif
 
-#include <OS.hpp>
+#include <godot_cpp/classes/global_constants.hpp>
+#include <godot_cpp/classes/os.hpp>
 
 #ifndef __WIN32
 #include <arpa/inet.h>
@@ -20,28 +21,6 @@
 #include "vm.h"
 
 using namespace godot;
-
-void VM::_register_methods() {
-  register_signal<VM>("console_wrote", "data",
-                      GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY);
-  register_signal<VM>("received", "data", GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY,
-                      "interface", GODOT_VARIANT_TYPE_INT);
-
-  register_method("_init", &VM::_init);
-
-  register_method("start", &VM::start);
-  register_method("run", &VM::run);
-  register_method("stop", &VM::stop);
-
-  register_method("run_thread", &VM::run_thread);
-  register_method("stop_thread", &VM::stop_thread);
-
-  register_method("console_read", &VM::console_read);
-  register_method("console_resize", &VM::console_resize);
-  register_method("transmit", &VM::transmit);
-
-  register_property<VM, Viewport *>("frame_buffer", &VM::frame_buffer, nullptr);
-}
 
 #if !defined(__WIN32) && !defined(EMSCRIPTEN)
 std::set<pthread_t> VM::threads = {};
@@ -64,24 +43,21 @@ static void on_alarm(int sig) {
 #endif
 
 static int load_file(uint8_t **pbuf, String filename) {
-  File *file = File::_new();
-  Error err = file->open(filename, File::READ);
+  Ref<FileAccess> file = FileAccess::open(filename, FileAccess::READ);
 
-  if (err != Error::OK) {
+  Error err = file->get_open_error();
+  if (err != OK) {
     ERR_PRINT("Failed to load file: '" + filename + "'.");
     // Flip the sign so that we can detect an error (i.e. len < 0),
     // and then flip it back to return the original error enum.
     return -(int)err;
   }
 
-  int64_t len = file->get_len();
-  PoolByteArray bytes = file->get_buffer(len);
+  int64_t len = file->get_length();
+  PackedByteArray bytes = file->get_buffer(len);
   uint8_t *buf = new uint8_t[len];
 
-  { memcpy(buf, bytes.read().ptr(), len); }
-
-  file->close();
-  file->free();
+  { memcpy(buf, bytes.ptrw(), len); }
 
   *pbuf = buf;
   return len;
@@ -96,9 +72,9 @@ void raw_write_packet(EthernetDevice *net, const uint8_t *buf, int len) {
   RawState *opaque = static_cast<RawState *>(net->opaque);
   VM *vm = static_cast<VM *>(opaque->vm);
 
-  PoolByteArray data;
+  PackedByteArray data;
   data.resize(len);
-  memcpy(data.write().ptr(), buf, len);
+  memcpy(data.ptrw(), buf, len);
 
   vm->emit_signal("received", data, opaque->index);
 }
@@ -106,16 +82,16 @@ void raw_write_packet(EthernetDevice *net, const uint8_t *buf, int len) {
 void raw_select_poll(EthernetDevice *net, fd_set *rfds, fd_set *wfds,
                      fd_set *efds, int select_ret) {
   RawState *s = static_cast<RawState *>(net->opaque);
-  PoolByteArray buffer = s->vm->net_buffers[s->index];
+  PackedByteArray buffer = s->vm->net_buffers[s->index];
   int len = buffer.size();
 
   if (len > 0) {
-    net->device_write_packet(net, buffer.read().ptr(), len);
-    s->vm->net_buffers[s->index] = PoolByteArray();
+    net->device_write_packet(net, buffer.ptr(), len);
+    s->vm->net_buffers[s->index] = PackedByteArray();
   }
 }
 
-void VM::transmit(PoolByteArray data, int iface) {
+void VM::transmit(PackedByteArray data, int iface) {
   net_buffers[iface].append_array(data);
 }
 
@@ -183,10 +159,10 @@ void VM::_init() { frame_buffer = nullptr; }
 static int _console_read(void *opaque, uint8_t *buf, int len) { return 0; }
 
 static void _console_write(void *opaque, const uint8_t *buf, int len) {
-  PoolByteArray data = PoolByteArray();
+  PackedByteArray data = PackedByteArray();
   data.resize(len);
 
-  { memcpy(data.write().ptr(), buf, len); }
+  { memcpy(data.ptrw(), buf, len); }
 
   VM *vm = static_cast<VM *>(opaque);
   vm->emit_signal("console_wrote", data);
@@ -206,7 +182,7 @@ static int bf_read_async(BlockDevice *bs, uint64_t sector_num, uint8_t *buf,
                          int n, BlockDeviceCompletionFunc *cb, void *opaque) {
   VM::BlockDeviceFile *bf = static_cast<VM::BlockDeviceFile *>(bs->opaque);
 
-  if (!bf->f) {
+  if (!bf->f.is_valid()) {
     return -1;
   }
 
@@ -215,8 +191,8 @@ static int bf_read_async(BlockDevice *bs, uint64_t sector_num, uint8_t *buf,
     for (i = 0; i < n; i++) {
       if (!bf->sector_table[sector_num]) {
         bf->f->seek(sector_num * SECTOR_SIZE);
-        PoolByteArray bytes = bf->f->get_buffer(SECTOR_SIZE);
-        memcpy(buf, bytes.read().ptr(), SECTOR_SIZE);
+        PackedByteArray bytes = bf->f->get_buffer(SECTOR_SIZE);
+        memcpy(buf, bytes.ptr(), SECTOR_SIZE);
       } else {
         memcpy(buf, bf->sector_table[sector_num], SECTOR_SIZE);
       }
@@ -226,8 +202,8 @@ static int bf_read_async(BlockDevice *bs, uint64_t sector_num, uint8_t *buf,
   } else {
     bf->f->seek(sector_num * SECTOR_SIZE);
     int len = n * SECTOR_SIZE;
-    PoolByteArray bytes = bf->f->get_buffer(len);
-    memcpy(buf, bytes.read().ptr(), len);
+    PackedByteArray bytes = bf->f->get_buffer(len);
+    memcpy(buf, bytes.ptr(), len);
   }
 
   return 0;
@@ -242,9 +218,9 @@ static int bf_write_async(BlockDevice *bs, uint64_t sector_num,
   switch (bf->mode) {
   case BF_MODE_RW: {
     bf->f->seek(sector_num * SECTOR_SIZE);
-    PoolByteArray bytes = PoolByteArray();
+    PackedByteArray bytes = PackedByteArray();
     bytes.resize(n * SECTOR_SIZE);
-    { memcpy(bytes.write().ptr(), buf, n * SECTOR_SIZE); }
+    { memcpy(bytes.ptrw(), buf, n * SECTOR_SIZE); }
     bf->f->store_buffer(bytes);
     ret = 0;
   } break;
@@ -274,15 +250,16 @@ static BlockDevice *block_device_init(String file, BlockDeviceModeEnum mode) {
   BlockDevice *bs;
   VM::BlockDeviceFile *bf;
   int64_t file_size;
-  File *f = File::_new();
+  Ref<FileAccess> f = FileAccess::open(
+      file, mode == BF_MODE_RW ? FileAccess::READ_WRITE : FileAccess::READ);
 
-  Error err = f->open(file, mode == BF_MODE_RW ? File::READ_WRITE : File::READ);
-  if (err != Error::OK) {
+  Error err = f->get_open_error();
+  if (err != OK) {
     ERR_PRINT("Failed to open file '" + file + "'.");
   }
 
   f->seek_end();
-  file_size = f->get_len();
+  file_size = f->get_length();
 
   bs = new BlockDevice;
   bf = new VM::BlockDeviceFile;
@@ -304,7 +281,8 @@ static BlockDevice *block_device_init(String file, BlockDeviceModeEnum mode) {
   return bs;
 }
 
-godot_error VM::start(Resource *config) {
+Error VM::start(Variant p_config) {
+  Resource *config = VariantCaster<Resource *>::cast(p_config);
   VirtMachineParams params_s, *params = &params_s;
   virt_machine_set_defaults(params);
 
@@ -327,7 +305,7 @@ godot_error VM::start(Resource *config) {
     }
   } else {
     ERR_PRINT("Unrecognized machine class.");
-    return GODOT_FAILED;
+    return FAILED;
   }
   params->vmc->virt_machine_set_defaults(params);
 
@@ -335,35 +313,35 @@ godot_error VM::start(Resource *config) {
   params->ram_size = (uint64_t)ram_size << 20;
 
   String bios = config->get("bios");
-  if (!bios.empty()) {
+  if (!bios.is_empty()) {
     VMFileEntry *entry = &params->files[VM_FILE_BIOS];
-    entry->filename = bios.alloc_c_string();
+    entry->filename = (char *)bios.ascii().get_data();
     entry->len = load_file(&entry->buf, entry->filename);
     if (entry->len < 0) {
-      return (godot_error)-entry->len;
+      return (Error)-entry->len;
     }
   }
 
   String kernel = config->get("kernel");
-  if (!kernel.empty()) {
+  if (!kernel.is_empty()) {
     VMFileEntry *entry = &params->files[VM_FILE_KERNEL];
-    entry->filename = kernel.alloc_c_string();
+    entry->filename = (char *)kernel.ascii().get_data();
     entry->len = load_file(&entry->buf, entry->filename);
     if (entry->len < 0) {
-      return (godot_error)-entry->len;
+      return (Error)-entry->len;
     }
   }
 
   String cmdline = config->get("cmdline");
-  if (!cmdline.empty()) {
-    vm_add_cmdline(params, cmdline.alloc_c_string());
+  if (!cmdline.is_empty()) {
+    vm_add_cmdline(params, cmdline.ascii().get_data());
   }
 
   Array block_devices = config->get("block_devices");
   params->drive_count = block_devices.size();
   for (int i = 0; i < block_devices.size(); i++) {
     BlockDevice *drive;
-    Resource *device = block_devices[i];
+    Ref<Resource> device = block_devices[i];
     String file = device->get("file");
     BlockDeviceModeEnum mode = (BlockDeviceModeEnum)(int)device->get("mode");
 
@@ -377,7 +355,7 @@ godot_error VM::start(Resource *config) {
       if (OS::get_singleton()->has_feature("standalone")) {
         // Exported project.
         ERR_PRINT(msg);
-        return GODOT_ERR_FILE_CANT_WRITE;
+        return ERR_FILE_CANT_WRITE;
       } else {
         // Project run from editor.
         WARN_PRINT(msg);
@@ -394,9 +372,9 @@ godot_error VM::start(Resource *config) {
   params->eth_count = net_devices.size();
   for (int i = 0; i < net_devices.size(); i++) {
     EthernetDevice *eth;
-    Resource *device = net_devices[i];
+    Resource *device = VariantCaster<Resource *>::cast(net_devices[i]);
     int driver = device->get("driver");
-    net_buffers[i] = PoolByteArray();
+    net_buffers[i] = PackedByteArray();
     switch (driver) {
     case 0: // RAW
       params->tab_eth[i].net = raw_open(this, i);
@@ -406,7 +384,8 @@ godot_error VM::start(Resource *config) {
       String name = OS::get_singleton()->get_name();
       if (name == String("Windows") || name == String("HTML5"))
         continue; // SLiRP not supported on Windows or HTML5.
-#if !defined(__WIN32) && !defined(EMSCRIPTEN) // SLiRP not supported on Windows or HTML5.
+#if !defined(__WIN32) &&                                                       \
+    !defined(EMSCRIPTEN) // SLiRP not supported on Windows or HTML5.
       params->tab_eth[i].net = slirp_open(this);
       Array port_forwards = device->call("_get_port_forwards_parsed");
       for (int i = 0; i < port_forwards.size(); i++) {
@@ -417,12 +396,13 @@ godot_error VM::start(Resource *config) {
 
         String host_addr_str = port_forward["host_addr"];
         struct in_addr host_addr = in_addr{0};
-        inet_pton(AF_INET, host_addr_str.alloc_c_string(), &host_addr.s_addr);
+        inet_pton(AF_INET, host_addr_str.ascii().get_data(), &host_addr.s_addr);
         int host_port = port_forward["host_port"];
 
         String guest_addr_str = port_forward["guest_addr"];
         struct in_addr guest_addr = in_addr{0};
-        inet_pton(AF_INET, guest_addr_str.alloc_c_string(), &guest_addr.s_addr);
+        inet_pton(AF_INET, guest_addr_str.ascii().get_data(),
+                  &guest_addr.s_addr);
         int guest_port = port_forward["guest_port"];
 
         slirp_add_hostfwd(slirp_state, is_udp, in_addr{host_addr.s_addr},
@@ -440,11 +420,12 @@ godot_error VM::start(Resource *config) {
 
   params->rtc_real_time = TRUE;
 
-  if (frame_buffer != nullptr) {
-    params->display_device = strdup("simplefb");
-    params->width = frame_buffer->get_size().x;
-    params->height = frame_buffer->get_size().y;
-  }
+  // TODO: FIXME!
+  // if (frame_buffer != nullptr) {
+  //  params->display_device = strdup("simplefb");
+  //  params->width = frame_buffer->get_size().x;
+  //  params->height = frame_buffer->get_size().y;
+  //}
 
   CharacterDevice *console = new CharacterDevice();
   console->opaque = this;
@@ -461,10 +442,10 @@ godot_error VM::start(Resource *config) {
 
   vm = virt_machine_init(params);
   if (!vm) {
-    return GODOT_FAILED;
+    return FAILED;
   }
 
-  return GODOT_OK;
+  return OK;
 }
 
 void VM::run(int max_sleep_time_ms = MAX_SLEEP_TIME,
@@ -513,7 +494,7 @@ int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
                    int max_exec_cycles = MAX_EXEC_CYCLES) {
 #if !defined(__WIN32) and !defined(EMSCRIPTEN)
   if (thread_running) {
-    return GODOT_ERR_ALREADY_IN_USE;
+    return ERR_ALREADY_IN_USE;
   }
 
   this->set_meta("max_sleep_time_ms", max_sleep_time_ms);
@@ -523,7 +504,7 @@ int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
 
   if (pthread_create(&thread, NULL, thread_func, this) != 0) {
     thread_running = false;
-    return GODOT_FAILED;
+    return FAILED;
   }
 
   VM::threads.insert(thread);
@@ -536,7 +517,7 @@ int VM::run_thread(int max_sleep_time_ms = MAX_SLEEP_TIME,
   sigaction(SIGALRM, &act, NULL);
 #endif
 
-  return GODOT_OK;
+  return OK;
 }
 
 void VM::stop_thread() {
@@ -558,22 +539,53 @@ void VM::stop() {
   }
 }
 
-godot_error VM::console_read(PoolByteArray data) {
+Error VM::console_read(PackedByteArray data) {
   if (!vm->console_dev) {
-    return GODOT_ERR_DOES_NOT_EXIST;
+    return ERR_DOES_NOT_EXIST;
   } else if (!virtio_console_can_write_data(vm->console_dev)) {
-    return GODOT_ERR_BUSY;
+    return ERR_BUSY;
   }
 
   if (data.size() > 0) {
-    virtio_console_write_data(vm->console_dev, data.read().ptr(), data.size());
+    virtio_console_write_data(vm->console_dev, data.ptr(), data.size());
   }
 
-  return GODOT_OK;
+  return OK;
 }
 
 void VM::console_resize(int width = 80, int height = 24) {
   if (vm->console_dev) {
     virtio_console_resize_event(vm->console_dev, width, height);
   }
+}
+
+void VM::_bind_methods() {
+  //  register_signal<VM>("console_wrote", "data",
+  //                      GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY);
+  //  register_signal<VM>("received", "data",
+  //  GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY,
+  //                      "interface", GODOT_VARIANT_TYPE_INT);
+  //
+  //  register_method("_init", &VM::_init);
+
+  // Methods.
+  ClassDB::bind_method(D_METHOD("start", "config"), &VM::start);
+  ClassDB::bind_method(D_METHOD("run", "max_sleep_time_ms", "max_exec_cycles"),
+                       &VM::run);
+  ClassDB::bind_method(D_METHOD("stop"), &VM::stop);
+  ClassDB::bind_method(
+      D_METHOD("run_thread", "max_sleep_time_ms", "max_exec_cycles"),
+      &VM::run_thread);
+  ClassDB::bind_method(D_METHOD("stop_thread"), &VM::stop_thread);
+  ClassDB::bind_method(D_METHOD("console_read", "data"), &VM::console_read);
+  ClassDB::bind_method(D_METHOD("console_resize", "width", "height"),
+                       &VM::console_resize);
+  ClassDB::bind_method(D_METHOD("transmit", "data", "iface"), &VM::transmit);
+
+  // Signals.
+  ADD_SIGNAL(MethodInfo("console_wrote",
+                        PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data")));
+
+  //  register_property<VM, Viewport *>("frame_buffer", &VM::frame_buffer,
+  //  nullptr);
 }

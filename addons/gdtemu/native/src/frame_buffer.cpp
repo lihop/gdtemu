@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Leroy Hopson
+// SPDX-FileCopyrightText: 2022-2023 Leroy Hopson
 // SPDX-License-Identifier: MIT
 
 #include "frame_buffer.h"
@@ -15,21 +15,28 @@
 
 using namespace godot;
 
-void FrameBuffer::_register_methods() {
-  register_method("_init", &FrameBuffer::_init);
-  register_method("get_size", &FrameBuffer::get_size);
-  register_method("get_data", &FrameBuffer::get_data);
+FrameBuffer::FrameBuffer() {
+  vm = Ref<VM>();
+  data = PackedByteArray();
 
-  register_property<FrameBuffer, Ref<VM>>("vm", &FrameBuffer::vm, Ref<VM>());
+  texture_rect->set_flip_v(true);
+  texture_rect->set_texture(image_texture);
+  texture_rect->set_material(shader_material);
+  add_child(texture_rect);
+  refresh();
 }
 
-void FrameBuffer::_init() {
-  vm = Ref<VM>();
-  data = PoolByteArray();
+FrameBuffer::~FrameBuffer() {}
+
+void FrameBuffer::refresh() {
+  texture_rect->set_size(get_size());
+  image->create_from_data(get_size().x, get_size().y, false,
+                          Image::FORMAT_RGBA8, get_data());
+  image_texture->create_from_image(image);
 }
 
 Vector2 FrameBuffer::get_size() {
-  IF_NO_FB_DEV_RETURN(Vector2::ZERO);
+  IF_NO_FB_DEV_RETURN(Vector2(0, 0));
 
   return Vector2(vm->vm->fb_dev->width, vm->vm->fb_dev->height);
 }
@@ -40,8 +47,8 @@ static void fb_dev_update(FBDevice *fb_dev, void *opaque, int x, int y, int w,
   *dirty = 1;
 }
 
-PoolByteArray FrameBuffer::get_data() {
-  IF_NO_FB_DEV_RETURN(PoolByteArray());
+PackedByteArray FrameBuffer::get_data() {
+  IF_NO_FB_DEV_RETURN(PackedByteArray());
 
   int len = vm->vm->fb_dev->height * vm->vm->fb_dev->stride;
 
@@ -53,7 +60,7 @@ PoolByteArray FrameBuffer::get_data() {
 
   {
     uint32_t *src = (uint32_t *)vm->vm->fb_dev->fb_data;
-    uint32_t *dest = (uint32_t *)data.write().ptr();
+    uint32_t *dest = (uint32_t *)data.ptrw();
 
     // Format of src data is 0xAARRGGBB but needs to be 0xAABBGGRR for Godot's
     // RGBA8 image format, so leave the green and alpha channels alone and swap
@@ -67,4 +74,24 @@ PoolByteArray FrameBuffer::get_data() {
   }
 
   return data;
+}
+
+void FrameBuffer::_bind_methods() {
+  ClassDB::bind_method(D_METHOD("get_size"), &FrameBuffer::get_size);
+  ClassDB::bind_method(D_METHOD("get_data"), &FrameBuffer::get_data);
+
+  // register_property<FrameBuffer, Ref<VM>>("vm", &FrameBuffer::vm, Ref<VM>());
+}
+
+void FrameBuffer::_notification(int what) {
+  switch (what) {
+  case NOTIFICATION_WM_SIZE_CHANGED:
+    refresh();
+    break;
+  case NOTIFICATION_PARENTED:
+  case NOTIFICATION_UNPARENTED:
+  case NOTIFICATION_MOVED_IN_PARENT:
+    update_configuration_warnings();
+    break;
+  }
 }

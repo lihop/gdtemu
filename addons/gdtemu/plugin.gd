@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz>
+# SPDX-FileCopyrightText: 2021-2023 Leroy Hopson <copyright@leroy.geek.nz>
 # SPDX-License-Identifier: MIT
-tool
+@tool
 extends EditorPlugin
 
 

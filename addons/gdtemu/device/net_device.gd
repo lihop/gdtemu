@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2022 Leroy Hopson <copyright@leroy.geek.nz>
+# SPDX-FileCopyrightText: 2022-2023 Leroy Hopson <copyright@leroy.geek.nz>
 # SPDX-License-Identifier: MIT
-tool
+@tool
 extends Resource
 
 enum Driver {
@@ -10,11 +10,11 @@ enum Driver {
 const DRIVER_RAW := Driver.RAW
 const DRIVER_USER := Driver.USER
 
-export(Driver) var driver := DRIVER_RAW
-export(PoolStringArray) var port_forwards := PoolStringArray()
+@export var driver := DRIVER_RAW
+@export var port_forwards := PackedStringArray()
 
 
-func _init(p_driver := DRIVER_RAW, p_port_forwards := PoolStringArray()):
+func _init(p_driver := DRIVER_RAW, p_port_forwards := PackedStringArray()):
 	driver = p_driver
 	port_forwards = p_port_forwards
 

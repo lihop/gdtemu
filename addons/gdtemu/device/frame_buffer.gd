@@ -1,17 +1,17 @@
-# SPDX-FileCopyrightText: 2022 Leroy Hopson
+# SPDX-FileCopyrightText: 2022-2023 Leroy Hopson
 # SPDX-License-Identifier: MIT
-tool
-extends Viewport
+@tool
+extends SubViewport
 
-const _FrameBufferNative := preload("../native/frame_buffer.gdns")
 const _VirtualMachine := preload("../virtual_machine.gd")
 
-export var ignore_alpha := true setget set_ignore_alpha
+@export var ignore_alpha := true:
+	set = set_ignore_alpha
 
 var _image := Image.new()
 var _image_texture := ImageTexture.new()
 var _texture_rect := TextureRect.new()
-var _fb_native := _FrameBufferNative.new()
+var _fb_native := FrameBuffer.new()
 var _shader_material := ShaderMaterial.new()
 
 
@@ -21,16 +21,16 @@ func set_ignore_alpha(value: bool) -> void:
 
 
 func _init():
-	if not is_connected("size_changed", self, "_on_size_changed"):
-		connect("size_changed", self, "_on_size_changed")
+	if not is_connected("size_changed", Callable(self, "_on_size_changed")):
+		connect("size_changed", Callable(self, "_on_size_changed"))
 
 
 func _ready():
 	_texture_rect.flip_v = true
-	_texture_rect.rect_size = size
+	_texture_rect.size = size
 	_texture_rect.texture = _image_texture
 	_texture_rect.material = ShaderMaterial.new()
-	_texture_rect.material.shader = preload("./frame_buffer.shader")
+	_texture_rect.material.shader = preload("./frame_buffer.gdshader")
 	add_child(_texture_rect)
 
 
@@ -76,7 +76,7 @@ func is_class(p_class: String) -> bool:
 func _notification(what: int):
 	match what:
 		NOTIFICATION_PARENTED, NOTIFICATION_UNPARENTED, NOTIFICATION_MOVED_IN_PARENT:
-			update_configuration_warning()
+			update_configuration_warnings()
 
 
 func _on_size_changed():

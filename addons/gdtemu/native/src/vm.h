@@ -1,13 +1,13 @@
-// SPDX-FileCopyrightText: 2021-2022 Leroy Hopson <copyright@leroy.geek.nz>
+// SPDX-FileCopyrightText: 2021-2023 Leroy Hopson <copyright@leroy.geek.nz>
 // SPDX-License-Identifier: MIT
 
-#ifndef GODOT_GDTEMU_VM_H
-#define GODOT_GDTEMU_VM_H
+#ifndef GDTEMU_VM_H
+#define GDTEMU_VM_H
 
-#include <File.hpp>
-#include <Godot.hpp>
-#include <Resource.hpp>
-#include <Viewport.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/global_constants.hpp>
+#include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/classes/sub_viewport.hpp>
 
 #include <map>
 #include <set>
@@ -30,34 +30,35 @@ extern "C" {
 #define MAX_EXEC_CYCLES 500000
 #define MAX_SLEEP_TIME 10 /* in ms */
 
-namespace godot {
+using namespace godot;
 
-class VM : public Reference {
-  GODOT_CLASS(VM, Reference)
+class VM : public RefCounted {
+  GDCLASS(VM, RefCounted)
 
 public:
-  static void _register_methods();
-
   VM();
   ~VM();
 
   void _init();
 
-  godot_error start(Resource *config);
+  Error start(Variant config);
   void run(int max_sleep_time_ms, int max_exec_cycles);
   void stop();
 
   int run_thread(int max_sleep_time_ms, int max_exec_cycles);
   void stop_thread();
 
-  godot_error console_read(PoolByteArray data);
+  Error console_read(PackedByteArray data);
   void console_resize(int width, int height);
-  void transmit(PoolByteArray data, int iface);
+  void transmit(PackedByteArray data, int iface);
 
   bool thread_running = false;
   VirtMachine *vm;
-  Viewport *frame_buffer;
-  std::map<int, PoolByteArray> net_buffers;
+  SubViewport *frame_buffer;
+  std::map<int, PackedByteArray> net_buffers;
+
+protected:
+  static void _bind_methods();
 
 private:
 #if !defined(__WIN32) && !defined(EMSCRIPTEN)
@@ -73,12 +74,11 @@ public:
 
   class BlockDeviceFile {
   public:
-    File *f;
+    Ref<FileAccess> f;
     int64_t nb_sectors;
     BlockDeviceModeEnum mode;
     uint8_t **sector_table;
   };
 };
-} // namespace godot
 
-#endif // GODOT_GDTEMU_VM_H
+#endif // GDTEMU_VM_H
