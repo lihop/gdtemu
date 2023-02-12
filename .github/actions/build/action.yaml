@@ -1,0 +1,88 @@
+---
+name: Build libgdtemu
+inputs:
+  platform:
+    default: linux
+  arch:
+    default: x86_64
+  target:
+    default: template_release
+  extra-args:
+    default: ''
+  upload:
+    default: false
+runs:
+  using: composite
+  steps:
+    - name: Checkout submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Create args
+      id: create-args
+      shell: bash
+      run: |
+        args="platform=${{inputs.platform}} target=${{inputs.target}} use_mingw=yes"
+        
+        case ${{ inputs.platform }} in
+          linux | windows)
+            case ${{inputs.arch}} in
+              64-bit)
+                args="$args arch=x86_64"
+                ;;
+              32-bit)
+                args="$args arch=x86_32"
+                ;;
+            esac
+            ;;
+
+          javascript)
+            args="$args arch=wasm32"
+            ;;
+
+          macos)
+            args="$args arch=universal"
+            ;;
+        esac
+
+        args="$args ${{inputs.extra-args}}"
+
+        echo "SCONS_ARGS=$args" >> $GITHUB_OUTPUT
+    - name: Setup SCons cache
+      shell: bash
+      run: |
+        export SCONS_CACHE=${{ runner.temp }}/scons-cache
+        mkdir -p $SCONS_CACHE
+        echo SCONS_CACHE=$SCONS_CACHE >> $GITHUB_ENV
+        echo SCONS_ARGS_HASH=$(echo -n ${{ env.SCONS_ARGS }} | md5sum | awk '{print $1}') >> $GITHUB_ENV
+        echo SRC_FILES_HASH=$(ls -1 addons/gdtemu/native/**/*.{c,h,cpp,hpp} | xargs sha1sum | sha1sum | awk '{print $1}') >> $GITHUB_ENV
+    - name: Cache SCons cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.SCONS_CACHE }}
+        key: scons-cache-${{ inputs.platform }}-${{ inputs.arch }}-${{ inputs.target }}-${{ env.SCONS_ARGS_HASH }}-${{ env.SRC_FILES_HASH }}
+        restore-keys: |
+          scons-cache-${{ inputs.platform }}-${{ inputs.arch }}-${{ inputs.target }}-${{ env.SCONS_ARGS_HASH }}-
+          scons-cache-${{ inputs.platform }}-${{ inputs.arch }}-${{ inputs.target }}-
+          scons-cache-${{ inputs.platform }}-${{ inputs.arch }}-
+    - name: Build inside a Docker container
+      if: ${{ inputs.platform != 'macos' }}
+      uses: ./.github/actions/build/build-docker
+      with:
+        platform: ${{ inputs.platform }}
+        scons-args: ${{ env.SCONS_ARGS }}
+    - name: Build natively on macOS
+      if: ${{ inputs.platform == 'macos' }}
+      uses: ./.github/actions/build/build-macos
+      with:
+        scons-args: ${{ env.SCONS_ARGS }}
+    - name: Upload artifacts
+      if: ${{ inputs.upload }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: libgdtemu-${{matrix.target}}
+        path: |
+          addons/gdtemu/native/bin/*.so
+          addons/gdtemu/native/bin/*.wasm
+          addons/gdtemu/native/bin/*.dylib
+          addons/gdtemu/native/bin/*.dll

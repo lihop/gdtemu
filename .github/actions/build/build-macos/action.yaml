@@ -1,0 +1,23 @@
+---
+name: Build libgdtemu natively on macOS
+inputs:
+  scons-args:
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Install build dependencies
+      shell: bash
+      run: brew install scons
+    - name: Delete VERSION file
+      # This file causes an error when compiling on macOS as somewhere along the way the cstddef file
+      # is included which contains `#include<version>`. With the macOS filesystem being case insensitive,
+      # the compiler thinks that this file (in the include path) is what we want. It isn't and it doesn't
+      # contain valid c/c++ code, thus causing an error once included.
+      working-directory: addons/gdtemu/native/thirdparty/TinyEMU
+      shell: bash
+      run: rm VERSION
+    - name: Build libgdtemu
+      working-directory: addons/gdtemu/native
+      shell: bash
+      run: scons ${{ inputs.scons-args }} -j2

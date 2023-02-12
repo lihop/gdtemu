@@ -5,16 +5,12 @@ on:
   schedule: # Keep the cache alive!
     - cron: 7 1 * * fri
 
-env:
-  TARGET_GODOT_VERSION: v3.5-stable
-  CACHE_VERSION: 0 # Manually invalidate cache by incrementing this number.
-
 jobs:
   reuse-compliance-check:
     name: 'Check REUSE Compliance'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: REUSE Compliance Check
       uses: fsfe/reuse-action@v1.1.1
       with:
@@ -24,189 +20,102 @@ jobs:
     name: 'Check GDScript Format'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
       with:
         python-version: 3.x
+        cache: pip
     - name: GDFormat Check
       run: |
         python -m pip install -r requirements.txt
-        gdformat -c .
+        # Ignore test files for now as they have not been ported to Godot 4.
+        # TODO: Port test files to Godot 4.
+        gdformat -c ./**/*[^test].gd
 
-  build-docker:
-    name: 'Build Docker (${{ matrix.platform }}, ${{ matrix.target }}, ${{ matrix.bits }}) #${{ github.run_number }}'
-    runs-on: ubuntu-latest
+  build:
+    name: Build
     strategy:
       fail-fast: false
       matrix:
-        platform: [ linux, javascript, windows ]
+        platform: [ linux, macos, windows ]
         target: [ release, debug ]
-        bits: [ 64, 32 ]
+        arch: [ 64-bit, 32-bit ]
         exclude:
           - platform: javascript
-            bits: 64
+            arch: 64-bit
+          - platform: macos
+            arch: 32-bit
+    runs-on: ${{ matrix.platform == 'macos' && 'macos-12' || 'ubuntu-22.04' }}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Get godot-cpp submodule commit hash
-        shell: bash
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        run: |
-          echo ::set-env name=GODOT_CPP_COMMIT_HASH::$(git ls-tree HEAD addons/gdtemu/native/thirdparty/godot-cpp -l | cut -d\  -f3)
-      - name: Cache godot-cpp bindings
-        uses: actions/cache@v3
-        id: godot-cpp-cache
-        with:
-          path: addons/gdtemu/native/thirdparty/godot-cpp
-          key: godot-cpp-docker-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-${{ env.CACHE_VERSION }}
-      - run: docker-compose pull
-        working-directory: addons/gdtemu/native
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-      - name: Build godot-cpp bindings
-        if: steps.godot-cpp-cache.outputs.cache-hit != 'true'
-        working-directory: addons/gdtemu/native
-        run: |
-          docker-compose build godot-cpp-${{ matrix.platform }}
-          UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} godot-cpp-${{ matrix.platform }}
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Build libgdtemu
-        working-directory: addons/gdtemu/native
-        run: |
-          docker-compose build gdtemu-${{ matrix.platform }}
-          UID_GID="$(id -u):$(id -g)" docker-compose run -e TARGET=${{ matrix.target }} -e BITS=${{ matrix.bits }} gdtemu-${{ matrix.platform }}
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: libgdtemu-${{ matrix.target }}
-          path: |
-            addons/gdtemu/native/bin/*.so
-            addons/gdtemu/native/bin/*.wasm
-            addons/gdtemu/native/bin/*.dll
-
-  build-native:
-    name: 'Build Native (${{ matrix.platform }}, ${{ matrix.target }}, ${{ matrix.bits }}) #${{ github.run_number }}'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ linux, osx ]
-        target: [ release, debug ]
-        bits: [ 64, 32 ]
-        include:
-          - platform: linux
-            os: ubuntu-latest
-          - platform: osx
-            os: macos-latest
-        exclude:
-          - platform: osx
-            bits: 32
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Get godot-cpp submodule commit hash
-        shell: bash
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        run: |
-          echo ::set-env name=GODOT_CPP_COMMIT_HASH::$(git ls-tree HEAD addons/gdtemu/native/thirdparty/godot-cpp -l | cut -d\  -f3)
-      - name: Cache godot-cpp bindings
-        uses: actions/cache@v3
-        id: godot-cpp-cache
-        with:
-          path: addons/gdtemu/native/thirdparty/godot-cpp
-          key: godot-cpp-native-${{ matrix.platform }}-${{ matrix.target }}-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}-${{ env.CACHE_VERSION }}
-      - if: ${{ matrix.os == 'ubuntu-latest' }}
-        name: Install ubuntu build dependencies
-        run: sudo apt-get update && sudo apt-get install -y scons gcc-multilib g++-multilib
-      - if: ${{ matrix.os == 'macos-latest' }}
-        name: Install macos build dependencies
-        run: brew install scons
-      - name: Build godot-cpp bindings
-        if: steps.godot-cpp-cache.outputs.cache-hit != 'true'
-        run: |
-          cd addons/gdtemu/native/thirdparty/godot-cpp
-          scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} generate_bindings=yes -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-      - name: Delete VERSION file
-        if: ${{ matrix.os == 'macos-latest' }}
-        # This file causes an error when compiling on macOS as somewhere along the way the cstddef file
-        # is included which contains '#include<version>'. With the macOS filesystem being case insensitive,
-        # the compiler thinks that this file (in the include path) we want. It isn't and it doesn't contain
-        # valid c/c++ code, thus causing an error once included.
-        working-directory: addons/gdtemu/native/thirdparty/TinyEMU
-        run: rm VERSION
-      - name: Build libgdtemu
-        working-directory: addons/gdtemu/native
-        run: scons platform=${{ matrix.platform }} target=${{ matrix.target }} bits=${{ matrix.bits }} -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-      - name: Upload build artifacts
-        if: ${{ matrix.platform == 'osx' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: libgdtemu-${{ matrix.target }}
-          path: |
-            addons/gdtemu/native/bin/*.dylib
-
-  test:
-    name: 'Run Tests'
-    needs: [ buildroot ]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ linux, osx, windows ]
-        bits: [ 64, 32 ]
-        godot_version: [ 'v3.4.5-stable', 'v3.5-stable' ]
-        include:
-          - platform: linux
-            os: ubuntu-latest
-          - platform: osx
-            os: macos-latest
-          - platform: windows
-            os: windows-latest
-        exclude:
-          - platform: osx
-            bits: 32
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Setup Godot
-        uses: lihop/setup-godot@v2
-        with:
-          version: ${{ matrix.godot_version }}
-          bits: ${{ matrix.bits }}
-      - name: Cache plugins
-        id: cache-plugins
-        uses: actions/cache@v3
-        with:
-          path: |
-            addons/*
-            !addons/gdtemu
-          key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
-      - name: Install plugins
-        if: steps.cache-plugins.outputs.cache-hit != 'true'
-        shell: bash
-        run: godot --no-window -s plug.gd install
-      - name: Install binaries
-        uses: ./.github/actions/install-binaries
+        uses: ./.github/actions/build
         with:
           platform: ${{ matrix.platform }}
-          bits: ${{ matrix.bits }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Import resources
-        shell: bash
-        run: godot --editor addons/gut/.cli_add/__rebuilder_scene.tscn
-      - name: Run unit and integration tests
-        uses: nick-fields/retry@v2
-        with:
-          shell: bash
-          command: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json
-          retry_on: error
-          timeout_minutes: 5
-          max_attempts: 6
+          arch: ${{ matrix.arch }}
+          target: template_${{ matrix.target }}
+          upload: true
 
+#  test:
+#    name: 'Run Tests'
+#    needs: [ buildroot ]
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        platform: [ linux, osx, windows ]
+#        bits: [ 64, 32 ]
+#        godot_version: [ 'v3.4.5-stable', 'v3.5-stable' ]
+#        include:
+#          - platform: linux
+#            os: ubuntu-latest
+#          - platform: osx
+#            os: macos-latest
+#          - platform: windows
+#            os: windows-latest
+#        exclude:
+#          - platform: osx
+#            bits: 32
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          submodules: recursive
+#      - name: Setup Godot
+#        uses: lihop/setup-godot@v2
+#        with:
+#          version: ${{ matrix.godot_version }}
+#          bits: ${{ matrix.bits }}
+#      - name: Cache plugins
+#        id: cache-plugins
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            addons/*
+#            !addons/gdtemu
+#          key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
+#      - name: Install plugins
+#        if: steps.cache-plugins.outputs.cache-hit != 'true'
+#        shell: bash
+#        run: godot --no-window -s plug.gd install
+#      - name: Install binaries
+#        uses: ./.github/actions/install-binaries
+#        with:
+#          platform: ${{ matrix.platform }}
+#          bits: ${{ matrix.bits }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Import resources
+#        shell: bash
+#        run: godot --editor addons/gut/.cli_add/__rebuilder_scene.tscn
+#      - name: Run unit and integration tests
+#        uses: nick-fields/retry@v2
+#        with:
+#          shell: bash
+#          command: godot --no-window -s addons/gut/gut_cmdln.gd -gconfig=.gutconfig_ci.json
+#          retry_on: error
+#          timeout_minutes: 5
+#          max_attempts: 6
+ 
   buildroot:
     name: Buildroot
     runs-on: ubuntu-latest
@@ -215,192 +124,223 @@ jobs:
       matrix:
         target: [ pc, riscv32, riscv64 ]
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Generate buildroot hash
-        id: buildroot-hash
-        run: >-
-          echo "::set-output name=hash::buildroot-${{ matrix.target }}-${{ format('{0}-{1}-{2}',
-            hashFiles(format('addons/gdtemu/board/{0}/*', matrix.target)),
-            hashFiles(format('examples/{0}/buildroot/.config', matrix.target)),
-            hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)) || '0')
-          }}-${{ env.CACHE_VERSION }}"
-      - name: Cache buildroot
-        id: cache-buildroot
-        uses: actions/cache@v3
-        with:
-          path: |
-            examples/**/images
-            examples/**/buildroot/build
-            examples/**/buildroot/host
-            examples/**/buildroot/staging
-          key: ${{ steps.buildroot-hash.outputs.hash }}
-      - name: Cache buildroot ccache
-        if: steps.cache-buildroot.outputs.cache-hit != 'true'
+      - name: Calculate cache keys
+        run: |
+          echo "BUILDROOT_BOARD_HASH=${{ hashFiles(format('addons/gdtemu/board/{0}/*', matrix.target)) }}" >> $GITHUB_ENV
+          echo "BUILDROOT_CONFIG_HASH=${{ hashFiles(format('examples/{0}/buildroot/.config', matrix.target)) }}" >> $GITHUB_ENV
+          echo "BUILDROOT_ROOTFS_OVERLAY_HASH=${{ hashFiles(format('examples/{0}/buildroot/rootfs_overlay/**/*', matrix.target)) || '0' }}" >> $GITHUB_ENV
+      - name: Setup ccache
         uses: actions/cache@v3
         with:
           path: ~/.buildroot-ccache
-          key: ccache-${{ steps.buildroot-hash.outputs.hash }}
+          key: buildroot-ccache-${{ matrix.target }}-${{ env.BUILDROOT_BOARD_HASH }}-${{ env.BUILDROOT_CONFIG_HASH }}
           restore-keys: |
-            ccache-buildroot-${{ matrix.target }}-
-            ccache-buildroot-
-      - run: sudo apt-get update && sudo apt-get install -y libelf-dev && make
-        if: steps.cache-buildroot.outputs.cache-hit != 'true'
+            buildroot-ccache-${{ matrix.target }}-${{ env.BUILDROOT_BOARD_HASH }}-
+            buildroot-ccache-${{ matrix.target }}-
+            buildroot-ccache-
+      - name: Install dependencies (pc)
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        if: ${{ matrix.target == 'pc' }}
+        with:
+          packages: libelf-dev
+      - name: Make
+        run: make
         working-directory: examples/${{ matrix.target }}/buildroot
-      - name: Upload example images
-        uses: actions/upload-artifact@v2
-        with:
-          name: example-images-${{ matrix.target }}
-          path: |
-            examples/${{ matrix.target }}/images/*Image
-            examples/${{ matrix.target }}/images/rootfs*
 
-  export-demo:
-    name: 'Export Demo'
-    needs: [ buildroot ]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ linux, javascript, osx, windows ]
-        bits: [ 64, 32 ]
-        exclude:
-          - platform: javascript
-            bits: 64
-          - platform: osx
-            bits: 32
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Setup Godot
-        uses: lihop/setup-godot@v2
-        with:
-          version: ${{ env.TARGET_GODOT_VERSION }} 
-          export-templates: true
-      - name: Cache plugins
-        id: cache-plugins
-        uses: actions/cache@v3
-        with:
-          path: |
-            addons/*
-            !addons/gdtemu
-          key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
-      - name: Install plugins
-        if: steps.cache-plugins.outputs.cache-hit != 'true'
-        shell: bash
-        run: godot --no-window -s plug.gd install
-      - name: Install binaries
-        uses: ./.github/actions/install-binaries
-        with:
-          platform: ${{ matrix.platform }}
-          bits: ${{ matrix.bits }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Export demo
-        uses: nick-fields/retry@v2
-        with:
-          shell: bash
-          command: godot --no-window --export ${{ matrix.platform }}.${{ matrix.bits}}
-          retry_on: error
-          timeout_minutes: 5
-          max_attempts: 6
-      - name: Upload demo
-        uses: actions/upload-artifact@v2
-        with:
-          name: gdtemu-demo.${{ matrix.platform }}.${{ matrix.bits }}
-          path: |
-            export/${{ matrix.platform }}.${{ matrix.bits }}
-            !export/**/.gitkeep
+            #      - name: Generate buildroot cache key
+            #        run: >-
+            #          echo "BUILDROOT_CACHE_KEY=buildroot-${{ matrix.target }}-${{ format('{0}-{1}-{2}',
+            #            hashFiles(format('addons/gdtemu/board/{0}/*', matrix.target)),
+            #            hashFiles(format('examples/{0}/buildroot/.config', matrix.target)),
+            #            hashFiles(format('examples/{0}/buildroot/rootfs_overlay', matrix.target)) || '0')
+            #          }}" >> $GITHUB_ENV
+            #          #      - name: Cache buildroot
+            #          #        id: cache-buildroot
+            #          #        uses: actions/cache@v3
+            #          #        with:
+            #          #          path: |
+            #          #            examples/**/images
+            #          #            examples/**/buildroot/build
+            #          #            examples/**/buildroot/host
+            #          #            examples/**/buildroot/staging
+            #          #          key: ${{ env.BUILDROOT_CACHE_KEY }}
+            #      - name: Cache buildroot ccache
+            #        #        if: steps.cache-buildroot.outputs.cache-hit != 'true'
+            #        uses: actions/cache@v3
+            #        with:
+            #          path: ~/.buildroot-ccache
+            #          key: ccache-${{ env.BUILDROOT_CACHE_KEY }}
+            #          restore-keys: |
+            #            ccache-buildroot-${{ matrix.target }}-
+            #            ccache-buildroot-
+            #      - uses: awalsh128/cache-apt-pkgs-action@latest
+            #        #if: steps.cache-buildroot.outputs.cache-hit != 'true'
+            #        with:
+            #          packages: libelf-dev
+            #      - run: make
+            #        #if: steps.cache-buildroot.outputs.cache-hit != 'true'
+            #        working-directory: examples/${{ matrix.target }}/buildroot
+            #      - name: Upload example images
+            #        uses: actions/upload-artifact@v3
+            #        with:
+            #          name: example-images-${{ matrix.target }}
+            #          path: |
+            #            examples/${{ matrix.target }}/images/*Image
+            #            examples/${{ matrix.target }}/images/rootfs*
 
-  smoke-test:
-    name: 'Smoke Test'
-    needs: [ export-demo ]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ linux, windows, osx ]
-        bits: [ 64, 32 ]
-        include:
-          - platform: linux
-            os: ubuntu-latest
-          - platform: windows
-            os: windows-latest
-          - platform: osx
-            os: macos-latest
-          - bits: 64
-            extension: x86_64
-          - bits: 32
-            extension: x86
-          - platform: windows
-            extension: exe
-        exclude:
-          - platform: osx
-            bits: 32
-    steps:
-      - name: Setup Godot
-        uses: lihop/setup-godot@v2
-        with:
-          bits: ${{ matrix.bits }}
-      - name: Download demo
-        uses: actions/download-artifact@v2
-        with:
-          name: gdtemu-demo.${{ matrix.platform }}.${{ matrix.bits }}
-          path: ./
-      - name: Run demo for 15 seconds
-        shell: bash
-        run: |
-          # Use dedicated tee file descriptor to redirect output to console *and* file.
-          exec 3> >(tee log.txt)
-          if [[ $RUNNER_OS == 'macOS' ]]; then
-            unzip gdtemu_demo.zip
-            demo=./gdtemu_demo.app/Contents/MacOS/gdtemu_demo
-          else
-            demo=./gdtemu_demo.${{ matrix.extension }}
-            chmod +x $demo
-          fi
-          $demo >&3 2>&1 & sleep 15 ; kill $!
-      - name: Check for errors in log file
-        shell: bash
-        run: '! grep ERROR log.txt'
-
+#  export-demo:
+#    name: 'Export Demo'
+#    needs: [ buildroot ]
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        platform: [ linux, javascript, osx, windows ]
+#        bits: [ 64, 32 ]
+#        exclude:
+#          - platform: javascript
+#            bits: 64
+#          - platform: osx
+#            bits: 32
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          submodules: recursive
+#      - name: Setup Godot
+#        uses: lihop/setup-godot@v2
+#        with:
+#          version: ${{ env.TARGET_GODOT_VERSION }} 
+#          export-templates: true
+#      - name: Cache plugins
+#        id: cache-plugins
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            addons/*
+#            !addons/gdtemu
+#          key: ${{ hashFiles('**/plug.gd') }}-${{ env.CACHE_VERSION }}
+#      - name: Install plugins
+#        if: steps.cache-plugins.outputs.cache-hit != 'true'
+#        shell: bash
+#        run: godot --no-window -s plug.gd install
+#      - name: Install binaries
+#        uses: ./.github/actions/install-binaries
+#        with:
+#          platform: ${{ matrix.platform }}
+#          bits: ${{ matrix.bits }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Export demo
+#        uses: nick-fields/retry@v2
+#        with:
+#          shell: bash
+#          command: godot --no-window --export ${{ matrix.platform }}.${{ matrix.bits}}
+#          retry_on: error
+#          timeout_minutes: 5
+#          max_attempts: 6
+#      - name: Upload demo
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: gdtemu-demo.${{ matrix.platform }}.${{ matrix.bits }}
+#          path: |
+#            export/${{ matrix.platform }}.${{ matrix.bits }}
+#            !export/**/.gitkeep
+#
+#  smoke-test:
+#    name: 'Smoke Test'
+#    needs: [ export-demo ]
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        platform: [ linux, windows, osx ]
+#        bits: [ 64, 32 ]
+#        include:
+#          - platform: linux
+#            os: ubuntu-latest
+#          - platform: windows
+#            os: windows-latest
+#          - platform: osx
+#            os: macos-latest
+#          - bits: 64
+#            extension: x86_64
+#          - bits: 32
+#            extension: x86
+#          - platform: windows
+#            extension: exe
+#        exclude:
+#          - platform: osx
+#            bits: 32
+#    steps:
+#      - name: Setup Godot
+#        uses: lihop/setup-godot@v2
+#        with:
+#          bits: ${{ matrix.bits }}
+#      - name: Download demo
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: gdtemu-demo.${{ matrix.platform }}.${{ matrix.bits }}
+#          path: ./
+#      - name: Run demo for 15 seconds
+#        shell: bash
+#        run: |
+#          # Use dedicated tee file descriptor to redirect output to console *and* file.
+#          exec 3> >(tee log.txt)
+#          if [[ $RUNNER_OS == 'macOS' ]]; then
+#            unzip gdtemu_demo.zip
+#            demo=./gdtemu_demo.app/Contents/MacOS/gdtemu_demo
+#          else
+#            demo=./gdtemu_demo.${{ matrix.extension }}
+#            chmod +x $demo
+#          fi
+#          $demo >&3 2>&1 & sleep 15 ; kill $!
+#      - name: Check for errors in log file
+#        shell: bash
+#        run: '! grep ERROR log.txt'
+#
   build-tinyemu-linux:
     name: 'Build TinyEMU (linux)'
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
-      - run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev zlib1g-dev libsdl2-dev
-        working-directory: addons/gdtemu/native/thirdparty/TinyEMU
+      - uses: actions/checkout@v3
+      - uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: libcurl4-openssl-dev libssl-dev zlib1g-dev libsdl2-dev
       - run: make
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
+
   build-tinyemu-js:
     name: 'Build TinyEMU (js)'
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten:sdk-incoming-64bit bash
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
       - run: docker exec emscripten make -f Makefile.js
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
+
   build-tinyemu-mac:
     name: 'Build TinyEMU (macos)'
     runs-on: macos-11
     env:
       DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: brew install openssl sdl2
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
       - run: make CFLAGS=-I$(brew --prefix)/opt/openssl/include LDFLAGS=-L$(brew --prefix)/opt/openssl/lib CONFIG_MACOS=y
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
+
   build-tinyemu-ios:
     name: 'Build TinyEMU (ios)'
     runs-on: macos-11
     env:
       DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: make CONFIG_IOS=y CONFIG_FS_NET= CONFIG_SDL=
         working-directory: addons/gdtemu/native/thirdparty/TinyEMU
       - run: make clean

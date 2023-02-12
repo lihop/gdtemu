@@ -16,8 +16,15 @@ opts.Add(BoolVariable(
     'Compiles with support for SLiRP',
     False
 ))
+
 opts.Update(env)
 Help(opts.GenerateHelpText(env))
+
+if env['platform'] == 'windows' and env['use_mingw']:
+    # This allows MinGW's time.h to expose localtime_r() which is used by TinyEMU's machine.c.
+    env.Append(CPPDEFINES=['_POSIX_THREAD_SAFE_FUNCTIONS'])
+    # Ditto but for clock_gettime() used by TinyEMU's riscv_machine.c.
+    env.Append(CPPDEFINES=['_POSIX_C_SOURCE=200809L', '__EXTENSIONS__'])
 
 env.Append(CPPPATH=[
     'thirdparty/TinyEMU/',
@@ -26,9 +33,9 @@ env.Append(CPPPATH=[
 
 env.Append(CPPDEFINES=[
     'CONFIG_RISCV_MAX_XLEN=64'
-] + [
+] + ([
     'CONFIG_X86EMU=y'
-] if env['platform'] == 'linux' else [])
+] if env['platform'] == 'linux' else []))
 
 env32 = env.Clone()
 env32.Append(CPPDEFINES=['MAX_XLEN=32'])
