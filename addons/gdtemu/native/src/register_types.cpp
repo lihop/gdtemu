@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Leroy Hopson <copyright@leroy.geek.nz>
+// SPDX-License-Identifier: MIT
+
 #include "register_types.h"
 
 #include <gdextension_interface.h>

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Leroy Hopson <copyright@leroy.geek.nz>
+// SPDX-License-Identifier: MIT
+
 #ifndef GDTEMU_REGISTER_TYPES_H
 #define GDTEMU_REGISTER_TYPES_H
 
