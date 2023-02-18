@@ -1,6 +1,8 @@
 {
   "dirs": [
-    "res://test"
+    "res://test/unit",
+    "res://test/kvm",
+    "res://test/integration"
   ],
   "prefix": "",
   "suffix": ".test.gd",

@@ -10,7 +10,7 @@ func before_each():
 
 
 func test__get_port_forwards_parsed():
-	dev.port_forwards = PoolStringArray(["tcp:127.0.0.1:5077-0.0.0.0:22"])
+	dev.port_forwards = PackedStringArray(["tcp:127.0.0.1:5077-0.0.0.0:22"])
 	var parsed = dev._get_port_forwards_parsed()
 	assert_eq_deep(
 		parsed,

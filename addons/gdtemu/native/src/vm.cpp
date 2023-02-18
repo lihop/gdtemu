@@ -562,9 +562,6 @@ void VM::console_resize(int width = 80, int height = 24) {
 void VM::_bind_methods() {
   //  register_signal<VM>("console_wrote", "data",
   //                      GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY);
-  //  register_signal<VM>("received", "data",
-  //  GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY,
-  //                      "interface", GODOT_VARIANT_TYPE_INT);
   //
   //  register_method("_init", &VM::_init);
 
@@ -585,6 +582,9 @@ void VM::_bind_methods() {
   // Signals.
   ADD_SIGNAL(MethodInfo("console_wrote",
                         PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data")));
+  ADD_SIGNAL(MethodInfo("received",
+                        PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data"),
+                        PropertyInfo(Variant::INT, "interface")));
 
   //  register_property<VM, Viewport *>("frame_buffer", &VM::frame_buffer,
   //  nullptr);

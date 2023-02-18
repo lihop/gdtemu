@@ -47,10 +47,12 @@ var _frame_buffer = null
 
 
 func set_use_threads(value: bool) -> void:
-	if OS.get_name() in ["X11", "Server", "OSX"]:
-		use_threads = value
+	if value:
+		if OS.get_name() in ["Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD", "macOS"]:
+			use_threads = true
+		else:
+			push_error("Threads not supported on this platform.")
 	else:
-		push_error("Use threads not supported on this platform.")
 		use_threads = false
 
 
