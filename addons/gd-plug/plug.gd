@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: 2021 Tan Jian Ping
+# SPDX-FileCopyrightText: 2021-2022 Tan Jian Ping
 # SPDX-License-Identifier: MIT
 # Source: https://github.com/imjp94/gd-plug
-tool
+@tool
 extends SceneTree
 
 signal updated(plugin)
@@ -35,14 +35,15 @@ var threadpool = _ThreadPool.new(logger)
 
 
 func _init():
-	threadpool.connect("all_thread_finished", self, "request_quit")
+	threadpool.connect("all_thread_finished", request_quit)
+	project_dir.open("res://")
 
 
 func _initialize():
 	var args = OS.get_cmdline_args()
 	# Trim unwanted args passed to godot executable
 	for arg in Array(args):
-		args.remove(0)
+		args.remove_at(0)
 		if "plug.gd" in arg:
 			break
 
@@ -68,7 +69,7 @@ func _initialize():
 				OS.set_environment(ENV_KEEP_IMPORT_RESOURCE_FILE, "true")
 
 	logger.debug("cmdline_args: %s" % args)
-	_start_time = OS.get_system_time_msecs()
+	_start_time = Time.get_ticks_msec()
 	_plug_start()
 	if args.size() > 0:
 		_plugging()
@@ -99,7 +100,7 @@ func _idle(delta):
 
 func _finalize():
 	_plug_end()
-	logger.info("Finished, elapsed %.3fs" % ((OS.get_system_time_msecs() - _start_time) / 1000.0))
+	logger.info("Finished, elapsed %.3fs" % ((Time.get_ticks_msec() - _start_time) / 1000.0))
 
 
 func _on_updated(plugin):
@@ -134,7 +135,7 @@ func _plug_start():
 # Install plugin or uninstall plugin if unlisted
 func _plug_end():
 	assert(_installed_plugins != null, MSG_PLUG_START_ASSERTION)
-	var test = !!OS.get_environment(ENV_TEST)
+	var test = !OS.get_environment(ENV_TEST).is_empty()
 	if not test:
 		installation_config.set_value("plugin", "installed", _installed_plugins)
 		if installation_config.save(DEFAULT_CONFIG_PATH) == OK:
@@ -168,11 +169,11 @@ func _plug_install():
 			var installed_plugin = get_installed_plugin(plugin.name)
 			if (installed_plugin.dev or plugin.dev) and OS.get_environment(ENV_PRODUCTION):
 				logger.info("Remove dev plugin for production: %s" % plugin.name)
-				threadpool.enqueue_task(self, "uninstall_plugin", installed_plugin)
+				threadpool.enqueue_task(uninstall_plugin.bind(installed_plugin))
 			else:
-				threadpool.enqueue_task(self, "update_plugin", plugin)
+				threadpool.enqueue_task(update_plugin.bind(plugin))
 		else:
-			threadpool.enqueue_task(self, "install_plugin", plugin)
+			threadpool.enqueue_task(install_plugin.bind(plugin))
 
 	var removed_plugins = []
 	for plugin in _installed_plugins.values():
@@ -180,13 +181,13 @@ func _plug_install():
 		if removed:
 			removed_plugins.append(plugin)
 	if removed_plugins:
-		threadpool.disconnect("all_thread_finished", self, "request_quit")
+		threadpool.disconnect("all_thread_finished", request_quit)
 		if not threadpool.is_all_thread_finished():
-			yield(threadpool, "all_thread_finished")
+			await threadpool.all_thread_finished
 			logger.debug("All installation finished! Ready to uninstall removed plugins...")
-		threadpool.connect("all_thread_finished", self, "request_quit")
+		threadpool.connect("all_thread_finished", request_quit)
 		for plugin in removed_plugins:
-			threadpool.enqueue_task(self, "uninstall_plugin", plugin, Thread.PRIORITY_LOW)
+			threadpool.enqueue_task(uninstall_plugin.bind(plugin), Thread.PRIORITY_LOW)
 
 
 func _plug_uninstall():
@@ -194,22 +195,23 @@ func _plug_uninstall():
 	logger.info("Uninstalling...")
 	for plugin in _installed_plugins.values():
 		var installed_plugin = get_installed_plugin(plugin.name)
-		threadpool.enqueue_task(self, "uninstall_plugin", installed_plugin, Thread.PRIORITY_LOW)
+		threadpool.enqueue_task(uninstall_plugin.bind(installed_plugin), Thread.PRIORITY_LOW)
 
 
 func _plug_clean():
 	assert(_installed_plugins != null, MSG_PLUG_START_ASSERTION)
 	logger.info("Cleaning...")
 	var plugged_dir = Directory.new()
+	plugged_dir.include_hidden = true
 	plugged_dir.open(DEFAULT_PLUG_DIR)
-	plugged_dir.list_dir_begin(true, true)
+	plugged_dir.list_dir_begin()  # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file = plugged_dir.get_next()
-	while not file.empty():
+	while not file.is_empty():
 		if plugged_dir.current_is_dir():
 			if not (file in _installed_plugins):
 				logger.info("Remove %s" % file)
 				threadpool.enqueue_task(
-					self, "directory_delete_recursively", plugged_dir.get_current_dir() + "/" + file
+					directory_delete_recursively.bind(plugged_dir.get_current_dir() + "/" + file)
 				)
 		file = plugged_dir.get_next()
 	plugged_dir.list_dir_end()
@@ -221,13 +223,13 @@ func _plug_upgrade():
 	plug("imjp94/gd-plug")
 	var gd_plug = _plugged_plugins["gd-plug"]
 	OS.set_environment(ENV_FORCE, "true")  # Required to overwrite res://addons/gd-plug/plug.gd
-	threadpool.enqueue_task(self, "install_plugin", gd_plug)
-	threadpool.disconnect("all_thread_finished", self, "request_quit")
+	threadpool.enqueue_task(install_plugin.bind(gd_plug))
+	threadpool.disconnect("all_thread_finished", request_quit)
 	if not threadpool.is_all_thread_finished():
-		yield(threadpool, "all_thread_finished")
+		await threadpool.all_thread_finished
 		logger.debug("All installation finished! Ready to uninstall removed plugins...")
-	threadpool.connect("all_thread_finished", self, "request_quit")
-	threadpool.enqueue_task(self, "directory_delete_recursively", gd_plug.plug_dir)
+	threadpool.connect("all_thread_finished", request_quit)
+	threadpool.enqueue_task(directory_delete_recursively.bind(gd_plug.plug_dir))
 
 
 func _plug_status():
@@ -248,13 +250,13 @@ func _plug_status():
 		if removed:
 			removed_plugins.append(plugin)
 		else:
-			threadpool.enqueue_task(self, "check_plugin", _plugged_plugins[plugin.name])
+			threadpool.enqueue_task(check_plugin.bind(_plugged_plugins[plugin.name]))
 			has_checking_plugin = true
 	if has_checking_plugin:
 		logger.info("\n", true)
-		threadpool.disconnect("all_thread_finished", self, "request_quit")
-		yield(threadpool, "all_thread_finished")
-		threadpool.connect("all_thread_finished", self, "request_quit")
+		threadpool.disconnect("all_thread_finished", request_quit)
+		await threadpool.all_thread_finished
+		threadpool.connect("all_thread_finished", request_quit)
 		logger.debug("Finished checking plugins, ready to proceed")
 	if new_plugins:
 		logger.info(
@@ -276,9 +278,9 @@ func _plug_status():
 	var plug_directory = Directory.new()
 	var orphan_dirs = []
 	if plug_directory.open(DEFAULT_PLUG_DIR) == OK:
-		plug_directory.list_dir_begin(true, true)
+		plug_directory.list_dir_begin()  # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file = plug_directory.get_next()
-		while not file.empty():
+		while not file.is_empty():
 			if plug_directory.current_is_dir():
 				if not (file in _installed_plugins):
 					orphan_dirs.append(file)
@@ -328,7 +330,7 @@ func plug(repo, args = {}):
 	is_valid = is_valid and validate_var_type(plugin, "tag", TYPE_STRING, "String")
 	plugin.commit = args.get("commit", "")
 	is_valid = is_valid and validate_var_type(plugin, "commit", TYPE_STRING, "String")
-	if not plugin.commit.empty():
+	if not plugin.commit.is_empty():
 		var is_valid_commit = plugin.commit.length() == 40
 		if not is_valid_commit:
 			logger.error(
@@ -350,8 +352,8 @@ func plug(repo, args = {}):
 
 
 func install_plugin(plugin):
-	var test = !!OS.get_environment(ENV_TEST)
-	var can_install = not OS.get_environment(ENV_PRODUCTION) if plugin.dev else true
+	var test = !OS.get_environment(ENV_TEST).is_empty()
+	var can_install = OS.get_environment(ENV_PRODUCTION).is_empty() if plugin.dev else true
 	if can_install:
 		logger.info("Installing plugin %s..." % plugin.name)
 		var result = is_plugin_downloaded(plugin)
@@ -367,7 +369,7 @@ func install_plugin(plugin):
 
 
 func uninstall_plugin(plugin):
-	var test = !!OS.get_environment(ENV_TEST)
+	var test = !OS.get_environment(ENV_TEST).is_empty()
 	logger.info("Uninstalling plugin %s..." % plugin.name)
 	uninstall(plugin)
 	directory_delete_recursively(plugin.plug_dir, {"exclude": [DEFAULT_CONFIG_PATH], "test": test})
@@ -414,7 +416,7 @@ func update_plugin(plugin, checking = false):
 	if not checking:
 		if should_clone:
 			logger.info("%s cloning from %s..." % [plugin.name, plugin.url])
-			var test = !!OS.get_environment(ENV_TEST)
+			var test = !OS.get_environment(ENV_TEST).is_empty()
 			uninstall(get_installed_plugin(plugin.name))
 			directory_delete_recursively(
 				plugin.plug_dir, {"exclude": [DEFAULT_CONFIG_PATH], "test": test}
@@ -438,15 +440,19 @@ func check_plugin(plugin):
 
 func downlaod(plugin):
 	logger.info("Downloading %s from %s..." % [plugin.name, plugin.url])
-	var test = !!OS.get_environment(ENV_TEST)
+	var test = !OS.get_environment(ENV_TEST).is_empty()
 	var global_dest_dir = ProjectSettings.globalize_path(plugin.plug_dir)
 	if project_dir.dir_exists(plugin.plug_dir):
 		directory_delete_recursively(plugin.plug_dir)
 	project_dir.make_dir(plugin.plug_dir)
-	var result = _GitExecutable.new(global_dest_dir, logger).clone(
-		plugin.url,
-		global_dest_dir,
-		{"branch": plugin.branch, "tag": plugin.tag, "commit": plugin.commit}
+	var result = (
+		_GitExecutable
+		. new(global_dest_dir, logger)
+		. clone(
+			plugin.url,
+			global_dest_dir,
+			{"branch": plugin.branch, "tag": plugin.tag, "commit": plugin.commit}
+		)
 	)
 	if result.exit == OK:
 		logger.info("Successfully download %s" % [plugin.name])
@@ -462,9 +468,9 @@ func downlaod(plugin):
 
 func install(plugin):
 	var include = plugin.get("include", [])
-	if include.empty():  # Auto include "addons/" folder if not explicitly specified
+	if include.is_empty():  # Auto include "addons/" folder if not explicitly specified
 		include = ["addons/"]
-	if not OS.get_environment(ENV_FORCE) and not OS.get_environment(ENV_TEST):
+	if OS.get_environment(ENV_FORCE).is_empty() and OS.get_environment(ENV_TEST).is_empty():
 		var is_exists = false
 		var dest_files = directory_copy_recursively(
 			plugin.plug_dir,
@@ -485,7 +491,7 @@ func install(plugin):
 			return ERR_ALREADY_EXISTS
 
 	logger.info("Installing files for %s..." % plugin.name)
-	var test = !!OS.get_environment(ENV_TEST)
+	var test = !OS.get_environment(ENV_TEST).is_empty()
 	var dest_files = directory_copy_recursively(
 		plugin.plug_dir,
 		"res://" + plugin.install_root,
@@ -510,9 +516,9 @@ func install(plugin):
 
 
 func uninstall(plugin):
-	var test = !!OS.get_environment(ENV_TEST)
-	var keep_import_file = !!OS.get_environment(ENV_KEEP_IMPORT_FILE)
-	var keep_import_resource_file = !!OS.get_environment(ENV_KEEP_IMPORT_RESOURCE_FILE)
+	var test = !OS.get_environment(ENV_TEST).is_empty()
+	var keep_import_file = !OS.get_environment(ENV_KEEP_IMPORT_FILE).is_empty()
+	var keep_import_resource_file = !OS.get_environment(ENV_KEEP_IMPORT_RESOURCE_FILE).is_empty()
 	var dest_files = plugin.get("dest_files", [])
 	logger.info(
 		(
@@ -577,11 +583,12 @@ func directory_copy_recursively(from, to, args = {}):
 	var test = args.get("test", false)
 	var silent_test = args.get("silent_test", false)
 	var dir = Directory.new()
+	dir.include_hidden = true
 	var dest_files = []
 	if dir.open(from) == OK:
-		dir.list_dir_begin(true, true)
+		dir.list_dir_begin()  # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
-		while not file_name.empty():
+		while not file_name.is_empty():
 			var source = (
 				dir.get_current_dir()
 				+ ("/" if dir.get_current_dir() != "res://" else "")
@@ -623,10 +630,11 @@ func directory_delete_recursively(dir_path, args = {}):
 	var test = args.get("test", false)
 	var silent_test = args.get("silent_test", false)
 	var dir = Directory.new()
+	dir.include_hidden = true
 	if dir.open(dir_path) == OK:
-		dir.list_dir_begin(true, false)
+		dir.list_dir_begin()  # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
-		while not file_name.empty():
+		while not file_name.is_empty():
 			var source = (
 				dir.get_current_dir()
 				+ ("/" if dir.get_current_dir() != "res://" else "")
@@ -826,7 +834,7 @@ func _plugging():
 
 
 class _GitExecutable:
-	extends Reference
+	extends RefCounted
 	var cwd = ""
 	var logger
 
@@ -834,19 +842,20 @@ class _GitExecutable:
 		cwd = p_cwd
 		logger = p_logger
 
-	func _execute(command, blocking = true, output = [], read_stderr = false):
-		var cmd = "cd %s && %s" % [cwd, command]
+	func _execute(command, output = [], read_stderr = false):
+		var cmd = "cd '%s' && %s" % [cwd, command]
 		# NOTE: OS.execute() seems to ignore read_stderr
 		var exit = FAILED
 		match OS.get_name():
 			"Windows":
+				cmd = cmd.replace("\'", '"')  # cmd doesn't accept single-quotes
 				cmd = cmd if read_stderr else "%s 2> nul" % cmd
 				logger.debug('Execute "%s"' % cmd)
-				exit = OS.execute("cmd", ["/C", cmd], blocking, output, read_stderr)
+				exit = OS.execute("cmd", ["/C", cmd], output, read_stderr)
 			"X11", "OSX", "Server":
 				cmd if read_stderr else "%s 2>/dev/null" % cmd
 				logger.debug('Execute "%s"' % cmd)
-				exit = OS.execute("bash", ["-c", cmd], blocking, output, read_stderr)
+				exit = OS.execute("bash", ["-c", cmd], output, read_stderr)
 			var unhandled_os:
 				logger.error("Unexpected OS: %s" % unhandled_os)
 		logger.debug("Execution ended(code:%d): %s" % [exit, output])
@@ -855,7 +864,7 @@ class _GitExecutable:
 	func init():
 		logger.debug("Initializing git at %s..." % cwd)
 		var output = []
-		var exit = _execute("git init", true, output)
+		var exit = _execute("git init", output)
 		logger.debug("Successfully init" if exit == OK else "Failed to init")
 		return {"exit": exit, "output": output}
 
@@ -865,15 +874,15 @@ class _GitExecutable:
 		var branch = args.get("branch", "")
 		var tag = args.get("tag", "")
 		var commit = args.get("commit", "")
-		var command = "git clone --depth=1 --progress %s %s" % [src, dest]
+		var command = "git clone --depth=1 --progress '%s' '%s'" % [src, dest]
 		if branch or tag:
 			command = (
-				"git clone --depth=1 --single-branch --branch %s %s %s"
+				"git clone --depth=1 --single-branch --branch %s '%s' '%s'"
 				% [branch if branch else tag, src, dest]
 			)
 		elif commit:
 			return clone_commit(src, dest, commit)
-		var exit = _execute(command, true, output)
+		var exit = _execute(command, output)
 		logger.debug(
 			"Successfully cloned from %s" % src if exit == OK else "Failed to clone from %s" % src
 		)
@@ -903,60 +912,60 @@ class _GitExecutable:
 	func fetch(rm = "--all"):
 		logger.debug("Fetching %s..." % rm.replace("--", ""))
 		var output = []
-		var exit = _execute("git fetch %s" % rm, true, output)
+		var exit = _execute("git fetch %s" % rm, output)
 		logger.debug("Successfully fetched" if exit == OK else "Failed to fetch")
 		return {"exit": exit, "output": output}
 
 	func pull():
 		logger.debug("Pulling...")
 		var output = []
-		var exit = _execute("git pull --rebase", true, output)
+		var exit = _execute("git pull --rebase", output)
 		logger.debug("Successfully pulled" if exit == OK else "Failed to pull")
 		return {"exit": exit, "output": output}
 
 	func remote_add(name, src):
 		logger.debug("Adding remote %s@%s..." % [name, src])
 		var output = []
-		var exit = _execute("git remote add %s %s" % [name, src], true, output)
+		var exit = _execute("git remote add %s '%s'" % [name, src], output)
 		logger.debug("Successfully added remote" if exit == OK else "Failed to add remote")
 		return {"exit": exit, "output": output}
 
 	func reset(mode, to):
 		logger.debug("Resetting %s %s..." % [mode, to])
 		var output = []
-		var exit = _execute("git reset %s %s" % [mode, to], true, output)
+		var exit = _execute("git reset %s %s" % [mode, to], output)
 		logger.debug("Successfully reset" if exit == OK else "Failed to reset")
 		return {"exit": exit, "output": output}
 
 	func get_commit_comparison(branch_a, branch_b):
 		var output = []
 		var exit = _execute(
-			"git rev-list --count --left-right %s...%s" % [branch_a, branch_b], true, output
+			"git rev-list --count --left-right %s...%s" % [branch_a, branch_b], output
 		)
 		var raw_ahead_behind = output[0].split("\t")
 		var ahead_behind = []
 		for msg in raw_ahead_behind:
-			ahead_behind.append(int(msg))
+			ahead_behind.append(msg.to_int())
 		return ahead_behind if exit == OK else []
 
 	func get_current_branch():
 		var output = []
-		var exit = _execute("git rev-parse --abbrev-ref HEAD", true, output)
+		var exit = _execute("git rev-parse --abbrev-ref HEAD", output)
 		return output[0] if exit == OK else ""
 
 	func get_current_tag():
 		var output = []
-		var exit = _execute("git describe --tags --exact-match", true, output)
+		var exit = _execute("git describe --tags --exact-match", output)
 		return output[0] if exit == OK else ""
 
 	func get_current_commit():
 		var output = []
-		var exit = _execute("git rev-parse --short HEAD", true, output)
+		var exit = _execute("git rev-parse --short HEAD", output)
 		return output[0] if exit == OK else ""
 
 	func is_detached_head():
 		var output = []
-		var exit = _execute("git rev-parse --short HEAD", true, output)
+		var exit = _execute("git rev-parse --short HEAD", output)
 		return (!!output[0]) if exit == OK else true
 
 	func is_up_to_date(args = {}):
@@ -982,7 +991,7 @@ class _GitExecutable:
 
 
 class _ThreadPool:
-	extends Reference
+	extends RefCounted
 	signal all_thread_finished
 
 	var _threads = []
@@ -1000,12 +1009,14 @@ class _ThreadPool:
 		var can_execute = thread
 		if can_execute:
 			task.thread = weakref(thread)
-			thread.start(self, "_execute", task, task.priority)
-			logger.debug("Execute task %s.%s() " % [task.instance, task.method])
+			var callable = task.get("callable")
+			thread.start(_execute.bind(task), task.priority)
+			logger.debug("Execute task %s.%s() " % [callable.get_object(), callable.get_method()])
 		return can_execute
 
 	func _execute(args):
-		args.instance.call(args.method, args.userdata)
+		var callable = args.get("callable")
+		callable.call()
 		_mutex.lock()
 		var thread = args.thread.get_ref()
 		_threads[_threads.find(thread)] = null
@@ -1013,7 +1024,7 @@ class _ThreadPool:
 		var all_finished = is_all_thread_finished()
 		_mutex.unlock()
 
-		logger.debug("Execution finished %s.%s() " % [args.instance, args.method])
+		logger.debug("Execution finished %s.%s() " % [callable.get_object(), callable.get_method()])
 		if all_finished:
 			logger.debug("All thread finished")
 			emit_signal("all_thread_finished")
@@ -1037,10 +1048,8 @@ class _ThreadPool:
 			var thread = _finished_threads.pop_front()
 			thread.wait_to_finish()
 
-	func enqueue_task(instance, method, userdata = null, priority = 1):
-		enqueue(
-			{"instance": instance, "method": method, "userdata": userdata, "priority": priority}
-		)
+	func enqueue_task(callable, priority = 1):
+		enqueue({"callable": callable, "priority": priority})
 
 	func enqueue(task):
 		var can_execute = _execute_task(task)
@@ -1079,7 +1088,7 @@ class _ThreadPool:
 
 
 class _Logger:
-	extends Reference
+	extends RefCounted
 	enum LogLevel { ALL, DEBUG, INFO, WARN, ERROR, NONE }
 	const DEFAULT_LOG_FORMAT_DETAIL = "[{time}] [{level}] {msg}"
 	const DEFAULT_LOG_FORMAT_NORMAL = "{msg}"
@@ -1117,7 +1126,7 @@ class _Logger:
 		)
 
 	func get_formatted_datatime():
-		var datetime = OS.get_datetime()
+		var datetime = Time.get_datetime_dict_from_system()
 		datetime.year = "%04d" % datetime.year
 		datetime.month = "%02d" % datetime.month
 		datetime.day = "%02d" % datetime.day
