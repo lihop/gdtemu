@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Leroy Hopson <copyright@leroy.geek.nz>
+// SPDX-FileCopyrightText: 2022-2023 Leroy Hopson <copyright@leroy.geek.nz>
 // SPDX-License-Identifier: MIT
 
 #include "frame_buffer.h"

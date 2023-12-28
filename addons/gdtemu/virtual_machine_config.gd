@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2022 Leroy Hopson <copyright@leroy.geek.nz>
+# SPDX-FileCopyrightText: 2022-2023 Leroy Hopson <copyright@leroy.geek.nz>
 # SPDX-License-Identifier: MIT
-tool
+@tool
 extends Resource
 
 const BlockDevice := preload("./device/block_device.gd")
@@ -18,14 +18,16 @@ const MACHINE_CLASS_PC := MachineClass.PC
 const MACHINE_CLASS_RISCV32 := MachineClass.RISCV32
 const MACHINE_CLASS_RISCV64 := MachineClass.RISCV64
 
-export(MachineClass) var machine_class := MACHINE_CLASS_PC
-export(int) var memory_size := 256
-export(String, FILE) var bios := ""
-export(String, FILE) var kernel := ""
-export(String) var cmdline := ""
-export(bool) var rng_device := true
-export(Array, Resource) var block_devices := [] setget set_block_devices
-export(Array, Resource) var net_devices := [] setget set_net_devices
+@export var machine_class := MACHINE_CLASS_PC
+@export var memory_size := 256
+@export_file var bios := ""
+@export_file var kernel := ""
+@export var cmdline := ""
+@export var rng_device := true
+@export var block_devices := []:
+	set = set_block_devices
+@export var net_devices := []:
+	set = set_net_devices
 
 
 func _init(

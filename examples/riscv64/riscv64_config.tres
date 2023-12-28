@@ -1,26 +1,26 @@
-[gd_resource type="Resource" load_steps=6 format=2]
+[gd_resource type="Resource" load_steps=6 format=3 uid="uid://dwttlkmer448i"]
 
-[ext_resource path="res://addons/gdtemu/device/block_device.gd" type="Script" id=1]
-[ext_resource path="res://addons/gdtemu/virtual_machine_config.gd" type="Script" id=2]
-[ext_resource path="res://addons/gdtemu/device/net_device.gd" type="Script" id=3]
+[ext_resource type="Script" path="res://addons/gdtemu/device/block_device.gd" id="1"]
+[ext_resource type="Script" path="res://addons/gdtemu/virtual_machine_config.gd" id="2"]
+[ext_resource type="Script" path="res://addons/gdtemu/device/net_device.gd" id="3"]
 
-[sub_resource type="Resource" id=1]
-script = ExtResource( 1 )
+[sub_resource type="Resource" id="1"]
+script = ExtResource("1")
 file = "res://examples/riscv64/images/rootfs.ext2"
 mode = 2
 
-[sub_resource type="Resource" id=2]
-script = ExtResource( 3 )
+[sub_resource type="Resource" id="2"]
+script = ExtResource("3")
 driver = 1
-port_forwards = PoolStringArray( "tcp:127.0.0.1:5078-0.0.0.0:22" )
+port_forwards = PackedStringArray("tcp:127.0.0.1:5078-0.0.0.0:22")
 
 [resource]
-script = ExtResource( 2 )
+script = ExtResource("2")
 machine_class = 3
 memory_size = 256
 bios = "res://addons/gdtemu/native/bin/bbl64.bin"
 kernel = "res://examples/riscv64/images/Image"
 cmdline = "loglevel=4 console=hvc0 root=/dev/vda rw"
 rng_device = true
-block_devices = [ SubResource( 1 ) ]
-net_devices = [ SubResource( 2 ) ]
+block_devices = [SubResource("1")]
+net_devices = [SubResource("2")]

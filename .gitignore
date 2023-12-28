@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: none
 # SPDX-License-Identifier: CC0-1.0
 .env
+.godot/
 .import/
 .plugged/
 .sconsign.dblite
@@ -14,4 +15,5 @@ export/*
 *.bc
 *.o
 *.os
+*.so
 *.swp

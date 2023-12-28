@@ -1,9 +1,8 @@
-# SPDX-FileCopyrightText: 2022 Leroy Hopson <copyright@leroy.geek.nz>
+# SPDX-FileCopyrightText: 2022-2023 Leroy Hopson <copyright@leroy.geek.nz>
 # SPDX-License-Identifier: MIT
-tool
+@tool
 extends Node
 
-const NativeVM := preload("./native/vm.gdns")
 const VirtualMachineConfig := preload("./virtual_machine_config.gd")
 
 const _NetDevice := preload("./device/net_device.gd")
@@ -13,7 +12,6 @@ signal transmitted(data, interface)
 
 enum State {
 	IDLE,
-	ERRORED,
 	RUNNING,
 	PAUSED,
 	STOPPED,
@@ -30,19 +28,22 @@ enum Priority {
 	HIGH,
 }
 
-export(Resource) var config = null setget set_config
-export(bool) var autostart := false
-export(bool) var use_threads := false setget set_use_threads
-export(int) var max_sleep_time_ms := 10
-export(int) var max_exec_cycles := 5000000
+@export var config: Resource = null:
+	set = set_config
+@export var autostart := false
+@export var use_threads := false:
+	set = set_use_threads
+@export var max_sleep_time_ms := 10
+@export var max_exec_cycles := 5000000
 
-var paused := false setget set_paused
+var paused := false:
+	set = set_paused
 
-var _native_vm: NativeVM
+var _native_vm: VM  # TODO: Merge with VirtualMachine and rename to VirtualMachine.
 var _state := STATE_IDLE
-var _console_buffer := PoolByteArray()
+var _console_buffer := PackedByteArray()
 var _buffer_dirty := false
-var _frame_buffer: Viewport = null
+var _frame_buffer = null
 
 
 func set_use_threads(value: bool) -> void:
@@ -58,7 +59,7 @@ func set_config(value: VirtualMachineConfig) -> void:
 
 
 func _ready():
-	if autostart and not Engine.editor_hint:
+	if autostart and not Engine.is_editor_hint():
 		start()
 
 
@@ -84,23 +85,25 @@ func start() -> int:
 					else:
 						_frame_buffer = child
 						if not _frame_buffer.is_connected(
-							"size_changed", self, "_on_fb_size_changed"
+							"size_changed", Callable(self, "_on_fb_size_changed")
 						):
-							_frame_buffer.connect("size_changed", self, "_on_fb_size_changed")
+							_frame_buffer.connect(
+								"size_changed", Callable(self, "_on_fb_size_changed")
+							)
 
 	if is_inside_tree():
-		yield(get_tree(), "idle_frame")
+		await (get_tree().process_frame)
 
 	if _state == STATE_RUNNING:
 		return ERR_ALREADY_IN_USE
 
-	_native_vm = NativeVM.new()
+	_native_vm = VM.new()
 	if _frame_buffer:
 		_frame_buffer._fb_native.vm = _native_vm
 
 	if _frame_buffer:
-		if not VisualServer.is_connected("frame_pre_draw", self, "_on_frame_pre_draw"):
-			VisualServer.connect("frame_pre_draw", self, "_on_frame_pre_draw")
+		if not RenderingServer.is_connected("frame_pre_draw", Callable(self, "_on_frame_pre_draw")):
+			RenderingServer.connect("frame_pre_draw", Callable(self, "_on_frame_pre_draw"))
 		_native_vm.frame_buffer = _frame_buffer
 
 	var err: int = _native_vm.start(config)
@@ -110,12 +113,12 @@ func start() -> int:
 
 	_state = STATE_RUNNING
 	if use_threads:
-		_native_vm.connect("console_wrote", self, "_on_console_wrote", [], CONNECT_DEFERRED)
-		_native_vm.connect("received", self, "_on_received", [], CONNECT_DEFERRED)
+		_native_vm.connect("console_wrote", Callable(self, "_on_console_wrote"), CONNECT_DEFERRED)
+		_native_vm.connect("received", Callable(self, "_on_received"), CONNECT_DEFERRED)
 		return _native_vm.run_thread(max_sleep_time_ms, max_exec_cycles)
 	else:
-		_native_vm.connect("console_wrote", self, "_on_console_wrote")
-		_native_vm.connect("received", self, "_on_received")
+		_native_vm.connect("console_wrote", Callable(self, "_on_console_wrote"))
+		_native_vm.connect("received", Callable(self, "_on_received"))
 
 	return OK
 
@@ -125,8 +128,8 @@ func _process(_delta: float) -> void:
 		_native_vm.run(max_sleep_time_ms, max_exec_cycles)
 
 
-func receive(data: PoolByteArray, interface := 0) -> int:
-	if not config.net_devices or config.net_devices.size() < interface + 1:
+func receive(data: PackedByteArray, interface := 0) -> int:
+	if config.net_devices == null or config.net_devices.size() < interface + 1:
 		push_error("VirtualMachine has no net_device at index %d." % interface)
 		return ERR_PARAMETER_RANGE_ERROR
 
@@ -150,8 +153,8 @@ func set_paused(value: bool) -> void:
 
 
 func stop():
-	if VisualServer.is_connected("frame_pre_draw", self, "_on_frame_pre_draw"):
-		VisualServer.disconnect("frame_pre_draw", self, "_on_frame_pre_draw")
+	if RenderingServer.is_connected("frame_pre_draw", Callable(self, "_on_frame_pre_draw")):
+		RenderingServer.disconnect("frame_pre_draw", Callable(self, "_on_frame_pre_draw"))
 
 	if _state == STATE_RUNNING or _state == STATE_PAUSED:
 		_state = STATE_STOPPED
@@ -159,15 +162,18 @@ func stop():
 			_native_vm.stop_thread()
 		_native_vm.stop()
 
-	if _frame_buffer and _frame_buffer.is_connected("size_changed", self, "_on_fb_size_changed"):
-		_frame_buffer.disconnect("size_changed", self, "_on_fb_size_changed")
+	if (
+		_frame_buffer
+		and _frame_buffer.is_connected("size_changed", Callable(self, "_on_fb_size_changed"))
+	):
+		_frame_buffer.disconnect("size_changed", Callable(self, "_on_fb_size_changed"))
 
 
 func _exit_tree():
 	stop()
 
 
-func console_read(data: PoolByteArray):
+func console_read(data: PackedByteArray):
 	if _native_vm and _state == STATE_RUNNING:
 		_console_buffer.append_array(data)
 		var err: int = _native_vm.console_read(data)
@@ -180,11 +186,11 @@ func console_resize(size: Vector2) -> void:
 		_native_vm.console_resize(size.x, size.y)
 
 
-func _on_console_wrote(data: PoolByteArray):
+func _on_console_wrote(data: PackedByteArray):
 	call_deferred("emit_signal", "console_wrote", data)
 
 
-func _on_received(data: PoolByteArray, interface: int):
+func _on_received(data: PackedByteArray, interface: int):
 	call_deferred("emit_signal", "transmitted", data, interface)
 
 

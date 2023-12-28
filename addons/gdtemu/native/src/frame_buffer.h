@@ -1,29 +1,47 @@
-// SPDX-FileCopyrightText: 2022 Leroy Hopson
+// SPDX-FileCopyrightText: 2022-2023 Leroy Hopson
 // SPDX-License-Identifier: MIT
 
-#ifndef GODOT_GDTEMU_FRAME_BUFFER_H
-#define GODOT_GDTEMU_FRAME_BUFFER_H
+#ifndef GDTEMU_FRAME_BUFFER_H
+#define GDTEMU_FRAME_BUFFER_H
 
 #include "vm.h"
 
-#include <Image.hpp>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
+#include <godot_cpp/classes/sub_viewport.hpp>
+#include <godot_cpp/classes/texture_rect.hpp>
 
-namespace godot {
+using namespace godot;
 
-class FrameBuffer : public Reference {
-  GODOT_CLASS(FrameBuffer, Reference)
+class FrameBuffer : public SubViewport {
+  GDCLASS(FrameBuffer, SubViewport)
 
 public:
-  static void _register_methods();
+  FrameBuffer();
+  ~FrameBuffer();
 
-  void _init();
+  bool ignore_alpha;
+  void set_ignore_alpha(bool value) { ignore_alpha = value; };
+  bool get_ignore_alpha() { return ignore_alpha; };
+
   Vector2 get_size();
-  PoolByteArray get_data();
+  PackedByteArray get_data();
+  void refresh();
+
+  void _notification(int what);
+
+protected:
+  static void _bind_methods();
 
 private:
   Ref<VM> vm;
-  PoolByteArray data;
-};
-} // namespace godot
+  PackedByteArray data;
 
-#endif // GODOT_GDTEMU_FRAME_BUFFER_H
+  Image *image = new Image();
+  ImageTexture *image_texture = new ImageTexture();
+  TextureRect *texture_rect = new TextureRect();
+  ShaderMaterial *shader_material = new ShaderMaterial();
+};
+
+#endif // GDTEMU_FRAME_BUFFER_H
